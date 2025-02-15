@@ -109,7 +109,7 @@
     <!-- Stats bar -->
     <div id="statsBar" class="stats-bar"></div>
 
-    <!-- Stages -->
+    <!-- Main board with columns -->
     <div class="board">
       <div class="column" data-stage="Applied">
         <h2>Applied</h2>
@@ -137,7 +137,7 @@
       </div>
     </div>
 
-    <!-- Pipeline Add Candidate Form -->
+    <!-- Pipeline Add Candidate Form (toggle via pipelineAddCandidateBtn) -->
     <div class="form-container" id="candidateFormContainer" style="display:none;">
       <h3>Add a New Candidate</h3>
       <form id="candidateForm">
@@ -172,6 +172,11 @@
         <button type="submit">Add Candidate</button>
       </form>
     </div>
+
+    <!-- "Back to Jobs" button in the pipeline -->
+    <button id="backToJobsBtn" class="back-btn" style="margin-top: 20px;">
+      ← Back to Jobs
+    </button>
   </section>
 
   <!-- ARCHIVED CANDIDATES VIEW -->
