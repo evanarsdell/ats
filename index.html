@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi-Job Applicant Tracking System</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- HEADER & MENU -->
+  <header>
+    <h1>Multi-Job ATS</h1>
+    <div class="dropdown">
+      <button id="dropdownBtn" class="dropdown-btn">Menu ▼</button>
+      <div id="dropdownContent" class="dropdown-content">
+        <!-- Hidden on home page; shown inside a pipeline -->
+        <button id="toggleFormBtn" style="display:none;">Add Candidate Form</button>
+        <button id="searchBtn">Search</button>
+        <button id="viewArchivedBtn">View Archived Candidates</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SEARCH FIELD -->
+  <div class="search-container" id="searchContainer" style="display: none;">
+    <input type="text" id="searchInput" placeholder="Type a name to search..." />
+  </div>
+
+  <!-- JOBS VIEW (Default) -->
+  <section id="jobsView">
+    <h2>Jobs</h2>
+    <div id="jobsList" class="jobs-list"></div>
+    
+    <!-- Add Job Form -->
+    <div class="form-container" id="addJobFormContainer">
+      <h3>Add a New Job</h3>
+      <form id="addJobForm">
+        <label for="jobTitle">Job Title</label>
+        <input type="text" id="jobTitle" required />
+        
+        <label for="jobManager">Hiring Manager</label>
+        <input type="text" id="jobManager" required />
+
+        <label for="jobLevel">Level</label>
+        <input type="text" id="jobLevel" />
+
+        <label for="jobCompRange">Comp Range</label>
+        <input type="text" id="jobCompRange" />
+
+        <label for="jobNotes">Notes</label>
+        <textarea id="jobNotes"></textarea>
+
+        <button type="submit">Add Job</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- CANDIDATES VIEW (Pipeline for a Selected Job) -->
+  <section id="candidatesView" style="display:none;">
+    <!-- Job Header -->
+    <div id="jobHeader" class="job-header"></div>
+
+    <!-- Stats bar for each job's pipeline -->
+    <div id="statsBar" class="stats-bar"></div>
+
+    <!-- Main Container with Stages -->
+    <div class="board">
+      <div class="column" data-stage="Applied">
+        <h2>Applied</h2>
+        <div class="column-content" id="appliedList"></div>
+      </div>
+      <div class="column" data-stage="Phone Screen">
+        <h2>Phone Screen</h2>
+        <div class="column-content" id="phoneScreenList"></div>
+      </div>
+      <div class="column" data-stage="HM Screen">
+        <h2>HM Screen</h2>
+        <div class="column-content" id="hmScreenList"></div>
+      </div>
+      <div class="column" data-stage="On-site">
+        <h2>On-site</h2>
+        <div class="column-content" id="onsiteList"></div>
+      </div>
+      <div class="column" data-stage="Offer">
+        <h2>Offer</h2>
+        <div class="column-content" id="offerList"></div>
+      </div>
+      <div class="column" data-stage="Hired">
+        <h2>Hired</h2>
+        <div class="column-content" id="hiredList"></div>
+      </div>
+    </div>
+
+    <!-- Add Candidate Form -->
+    <div class="form-container" id="candidateFormContainer" style="display:none;">
+      <h3>Add a New Candidate</h3>
+      <form id="candidateForm">
+        <label for="candidateName">Full Name</label>
+        <input type="text" id="candidateName" required />
+        
+        <label for="candidateEmail">Email</label>
+        <input type="email" id="candidateEmail" required />
+        
+        <label for="candidatePosition">Position</label>
+        <input type="text" id="candidatePosition" required />
+
+        <label for="candidateNotes">Notes</label>
+        <textarea id="candidateNotes"></textarea>
+
+        <p><strong>Candidate Source:</strong></p>
+        <div class="candidate-source-group">
+          <label>
+            <input type="radio" name="candidateSource" value="referral" />
+            Referral
+          </label>
+          <label>
+            <input type="radio" name="candidateSource" value="applied" checked />
+            Applied
+          </label>
+          <label>
+            <input type="radio" name="candidateSource" value="sourced" />
+            Sourced
+          </label>
+        </div>
+        
+        <button type="submit">Add Candidate</button>
+      </form>
+    </div>
+    <!-- Return to Jobs button -->
+    <button id="backToJobsBtn" class="back-btn">← Back to Jobs</button>
+  </section>
+
+  <!-- ARCHIVED CANDIDATES VIEW -->
+  <section id="archivedView" style="display:none;">
+    <h2>Archived Candidates</h2>
+    <div id="archivedList" class="archived-list"></div>
+    <button id="backToJobsFromArchiveBtn" class="back-btn">← Back to Jobs</button>
+  </section>
+
+  <!-- MODAL: Edit Candidate -->
+  <div id="editCandidateModal" class="modal">
+    <div class="modal-content">
+      <span id="closeCandidateModal" class="close">&times;</span>
+      <h2>Edit Candidate</h2>
+      <form id="editCandidateForm">
+        <input type="hidden" id="editCandidateId" />
+        
+        <label for="editCandidateName">Full Name</label>
+        <input type="text" id="editCandidateName" required />
+        
+        <label for="editCandidateEmail">Email</label>
+        <input type="email" id="editCandidateEmail" required />
+        
+        <label for="editCandidatePosition">Position</label>
+        <input type="text" id="editCandidatePosition" required />
+
+        <label for="editCandidateNotes">Notes</label>
+        <textarea id="editCandidateNotes"></textarea>
+
+        <p><strong>Candidate Source:</strong></p>
+        <div class="candidate-source-group">
+          <label>
+            <input type="radio" name="editCandidateSource" value="referral" />
+            Referral
+          </label>
+          <label>
+            <input type="radio" name="editCandidateSource" value="applied" />
+            Applied
+          </label>
+          <label>
+            <input type="radio" name="editCandidateSource" value="sourced" />
+            Sourced
+          </label>
+        </div>
+        
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Edit Job -->
+  <div id="editJobModal" class="modal">
+    <div class="modal-content">
+      <span id="closeJobModal" class="close">&times;</span>
+      <h2>Edit Job</h2>
+      <form id="editJobForm">
+        <input type="hidden" id="editJobId" />
+        
+        <label for="editJobTitle">Job Title</label>
+        <input type="text" id="editJobTitle" required />
+        
+        <label for="editJobManager">Hiring Manager</label>
+        <input type="text" id="editJobManager" required />
+
+        <label for="editJobLevel">Level</label>
+        <input type="text" id="editJobLevel" />
+
+        <label for="editJobCompRange">Comp Range</label>
+        <input type="text" id="editJobCompRange" />
+
+        <label for="editJobNotes">Notes</label>
+        <textarea id="editJobNotes"></textarea>
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Transfer Candidate -->
+  <div id="transferCandidateModal" class="modal">
+    <div class="modal-content">
+      <span id="closeTransferModal" class="close">&times;</span>
+      <h2>Transfer Candidate</h2>
+      <form id="transferCandidateForm">
+        <input type="hidden" id="transferCandidateId" />
+        <label for="transferJobSelect">Select Job</label>
+        <select id="transferJobSelect"></select>
+        <button type="submit">Transfer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Interview Feedback -->
+  <div id="feedbackCandidateModal" class="modal">
+    <div class="modal-content">
+      <span id="closeFeedbackModal" class="close">&times;</span>
+      <h2>Interview Feedback</h2>
+      <form id="feedbackCandidateForm">
+        <input type="hidden" id="feedbackCandidateId" />
+
+        <label for="feedbackStageSelect">Stage</label>
+        <select id="feedbackStageSelect">
+          <option value="Phone Screen">Phone Screen</option>
+          <option value="HM Screen">HM Screen</option>
+          <option value="On-site">On-site</option>
+          <option value="Offer">Offer</option>
+        </select>
+
+        <label for="feedbackRatingSelect">Rating</label>
+        <select id="feedbackRatingSelect">
+          <option value="strong_no">Strong No</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+          <option value="strong_yes">Strong Yes</option>
+        </select>
+
+        <!-- If On-site is chosen, multiple interviewer feedback can be added -->
+        <div id="onsiteInterviewersSection" style="display:none;">
+          <h4>Multiple Interviewers</h4>
+          <button type="button" id="addInterviewerBtn">+ Add Interviewer</button>
+          <div id="onsiteInterviewersList"></div>
+        </div>
+
+        <label for="feedbackNotes">Detailed Feedback</label>
+        <textarea id="feedbackNotes"></textarea>
+
+        <button type="submit">Save Feedback</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Archive Confirmation -->
+  <div id="archiveConfirmModal" class="modal">
+    <div class="modal-content">
+      <span id="closeArchiveModal" class="close">&times;</span>
+      <h2>Archive Candidate</h2>
+      <p>Are you sure you want to archive this candidate? All info will be retained but removed from the active pipeline.</p>
+      <div class="card-actions" style="justify-content: flex-end;">
+        <button id="archiveYesBtn">Yes, Archive</button>
+        <button id="archiveNoBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
