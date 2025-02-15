@@ -16,7 +16,8 @@
         <!-- Hidden on home page; shown inside a pipeline -->
         <button id="toggleFormBtn" style="display:none;">Add Candidate Form</button>
         <button id="searchBtn">Search</button>
-        <button id="viewArchivedBtn">View Archived Candidates</button>
+        <button id="viewArchivedCandidatesBtn">View Archived Candidates</button>
+        <button id="viewArchivedJobsBtn">View Archived Jobs</button>
       </div>
     </div>
   </header>
@@ -131,10 +132,17 @@
   </section>
 
   <!-- ARCHIVED CANDIDATES VIEW -->
-  <section id="archivedView" style="display:none;">
+  <section id="archivedCandidatesView" style="display:none;">
     <h2>Archived Candidates</h2>
     <div id="archivedList" class="archived-list"></div>
-    <button id="backToJobsFromArchiveBtn" class="back-btn">← Back to Jobs</button>
+    <button id="backToJobsFromArchiveCandidatesBtn" class="back-btn">← Back to Jobs</button>
+  </section>
+
+  <!-- ARCHIVED JOBS VIEW -->
+  <section id="archivedJobsView" style="display:none;">
+    <h2>Archived Jobs</h2>
+    <div id="archivedJobsList" class="archived-list"></div>
+    <button id="backToJobsFromArchiveJobsBtn" class="back-btn">← Back to Jobs</button>
   </section>
 
   <!-- MODAL: Edit Candidate -->
@@ -259,7 +267,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Archive Confirmation -->
+  <!-- MODAL: Archive Confirmation for Candidates -->
   <div id="archiveConfirmModal" class="modal">
     <div class="modal-content">
       <span id="closeArchiveModal" class="close">&times;</span>
@@ -268,6 +276,19 @@
       <div class="card-actions" style="justify-content: flex-end;">
         <button id="archiveYesBtn">Yes, Archive</button>
         <button id="archiveNoBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Archive Confirmation for Jobs -->
+  <div id="archiveJobModal" class="modal">
+    <div class="modal-content">
+      <span id="closeArchiveJobModal" class="close">&times;</span>
+      <h2>Archive Job</h2>
+      <p>Are you sure you want to archive this job? All info will be retained but removed from active jobs.</p>
+      <div class="card-actions" style="justify-content: flex-end;">
+        <button id="archiveJobYesBtn">Yes, Archive</button>
+        <button id="archiveJobNoBtn">Cancel</button>
       </div>
     </div>
   </div>
