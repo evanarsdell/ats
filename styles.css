@@ -173,6 +173,12 @@ header {
 .archived-card h4 {
   margin-bottom: 6px;
   font-size: 1.1rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.archived-card h4:hover {
+  color: #007bff;
 }
 
 .history-item {
@@ -371,13 +377,17 @@ header {
   background-color: #f7f7f7;
 }
 
-/* Color-coded text */
+/* Candidate name is clickable => open detail modal */
 .candidate-name {
   color: #007BFF; /* Blue */
   font-weight: bold;
   display: block;
   margin-bottom: 2px;
   font-size: 0.95rem;
+  cursor: pointer;
+}
+.candidate-name:hover {
+  text-decoration: underline;
 }
 
 .candidate-position {
@@ -422,7 +432,7 @@ header {
   display: flex;
   align-items: center;
   gap: 6px;
-  cursor: pointer; /* we want them clickable */
+  cursor: pointer; /* clickable to open feedback modal */
 }
 
 .candidate-feedback-summary li:hover {
@@ -474,6 +484,13 @@ header {
   background-color: #0056b3;
 }
 
+.delete-btn {
+  background-color: #dc3545;
+}
+.delete-btn:hover {
+  background-color: #b52b38;
+}
+
 /* Drag & Drop Visual Feedback */
 .column-content.drag-over {
   background-color: #e0ffe0;
@@ -481,7 +498,7 @@ header {
 }
 
 /* =========================
-   MODALS (Edit/Transfer/Feedback/Archive)
+   MODALS
 ========================= */
 .modal {
   display: none; /* Hidden by default */
@@ -589,6 +606,29 @@ header {
   margin-bottom: 8px;
   background: #fff;
   border: 1px solid #eee;
+  padding: 6px;
+  border-radius: 4px;
+}
+
+/* Candidate Detail Modal */
+#viewCandidateModal .modal-content {
+  width: 600px; /* bigger for more detail */
+  max-width: 90%;
+}
+#candidateDetailContent {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+#candidateDetailContent h3 {
+  margin-top: 10px;
+  font-size: 1rem;
+}
+#candidateDetailContent .feedback-stage {
+  margin: 4px 0;
+}
+#candidateDetailContent .history-block {
+  margin: 4px 0;
+  background-color: #f8f9fa;
   padding: 6px;
   border-radius: 4px;
 }
