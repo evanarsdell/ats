@@ -37,7 +37,6 @@ let candidates = [
     history: [],
     feedback: {
       // "Phone Screen": { rating: "yes", notes: "..." },
-      // "On-site": { rating: "strong_yes", notes: "...", interviews: [ { name, rating, notes } ] }
     }
   },
   {
@@ -150,6 +149,11 @@ const closeArchiveModal = document.getElementById("closeArchiveModal");
 const archiveYesBtn = document.getElementById("archiveYesBtn");
 const archiveNoBtn = document.getElementById("archiveNoBtn");
 
+// Candidate Detail Modal
+const viewCandidateModal = document.getElementById("viewCandidateModal");
+const closeCandidateDetailModal = document.getElementById("closeCandidateDetailModal");
+const candidateDetailContent = document.getElementById("candidateDetailContent");
+
 /************************************
  * EVENT LISTENERS
  ************************************/
@@ -171,13 +175,6 @@ searchBtn.addEventListener("click", () => {
   searchContainer.style.display =
     searchContainer.style.display === "none" ? "flex" : "none";
   searchInput.value = "";
-  if (currentJobId) {
-    renderPipeline();
-  }
-});
-
-// Search input
-searchInput.addEventListener("input", () => {
   if (currentJobId) {
     renderPipeline();
   }
@@ -217,7 +214,6 @@ candidateForm.addEventListener("submit", (e) => {
 
 // Back to jobs
 backToJobsBtn.addEventListener("click", () => {
-  // Hide pipeline, show jobs
   candidatesView.style.display = "none";
   jobsView.style.display = "block";
   currentJobId = null;
@@ -265,6 +261,9 @@ closeFeedbackModal.addEventListener("click", () => {
 });
 closeArchiveModal.addEventListener("click", () => {
   archiveConfirmModal.classList.remove("show");
+});
+closeCandidateDetailModal.addEventListener("click", () => {
+  viewCandidateModal.classList.remove("show");
 });
 
 // Archive confirm
@@ -520,11 +519,26 @@ function renderPipeline() {
     const archiveBtn = card.querySelector(".archive-btn");
     const transferBtn = card.querySelector(".transfer-btn");
     const feedbackBtn = card.querySelector(".feedback-btn");
+    const nameEl = card.querySelector(".candidate-name");
 
     editBtn.addEventListener("click", () => openEditCandidateModal(candidate.id));
     archiveBtn.addEventListener("click", () => openArchiveModal(candidate));
     transferBtn.addEventListener("click", () => openTransferModal(candidate.id));
     feedbackBtn.addEventListener("click", () => openFeedbackModal(candidate.id));
+
+    // Candidate name => open detail modal
+    nameEl.addEventListener("click", () => openCandidateDetailModal(candidate.id));
+
+    // For each feedback <li> (stage summary), we want it clickable => open existing feedback
+    const summaryContainer = card.querySelector(".candidate-feedback-summary");
+    if (summaryContainer) {
+      summaryContainer.querySelectorAll("li").forEach(li => {
+        li.addEventListener("click", () => {
+          const stg = li.getAttribute("data-stage");
+          openFeedbackModal(candidate.id, stg);
+        });
+      });
+    }
 
     // Place in correct column
     switch (candidate.stage) {
@@ -703,20 +717,71 @@ function completeTransfer() {
 /************************************
  * FEEDBACK
  ************************************/
-function openFeedbackModal(candidateId) {
+function openFeedbackModal(candidateId, stage = null) {
   const candidate = candidates.find(c => c.id === candidateId);
   if (!candidate) return;
 
   feedbackCandidateId.value = candidate.id;
 
-  // Default the stage to Phone Screen
-  feedbackStageSelect.value = "Phone Screen";
-  feedbackRatingSelect.value = "no";
-  feedbackNotes.value = "";
-  onsiteInterviewersList.innerHTML = "";
+  // If a stage is provided, load existing feedback
+  if (stage) {
+    feedbackStageSelect.value = stage;
+    if (candidate.feedback[stage]) {
+      // existing rating/notes
+      const f = candidate.feedback[stage];
+      feedbackRatingSelect.value = f.rating || "no";
+      feedbackNotes.value = f.notes || "";
+      // If on-site with multiple interviewers
+      if (stage === "On-site") {
+        onsiteInterviewersList.innerHTML = "";
+        onsiteInterviewersSection.style.display = "block";
+        if (f.interviews && Array.isArray(f.interviews)) {
+          f.interviews.forEach(intv => {
+            const block = document.createElement("div");
+            block.classList.add("interviewer-block");
+            block.innerHTML = `
+              <label>Name</label>
+              <input type="text" class="interviewer-name" value="${intv.name || ""}" />
+
+              <label>Rating</label>
+              <select class="interviewer-rating">
+                <option value="strong_no">Strong No</option>
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+                <option value="strong_yes">Strong Yes</option>
+              </select>
+
+              <label>Notes</label>
+              <textarea class="interviewer-notes">${intv.notes || ""}</textarea>
+            `;
+            onsiteInterviewersList.appendChild(block);
+
+            // set rating
+            const ratingSel = block.querySelector(".interviewer-rating");
+            if (ratingSel) ratingSel.value = intv.rating || "no";
+          });
+        }
+      } else {
+        onsiteInterviewersList.innerHTML = "";
+        onsiteInterviewersSection.style.display = "none";
+      }
+    } else {
+      // no existing feedback
+      feedbackRatingSelect.value = "no";
+      feedbackNotes.value = "";
+      onsiteInterviewersList.innerHTML = "";
+      onsiteInterviewersSection.style.display = (stage === "On-site") ? "block" : "none";
+    }
+  } else {
+    // default
+    feedbackStageSelect.value = "Phone Screen";
+    feedbackRatingSelect.value = "no";
+    feedbackNotes.value = "";
+    onsiteInterviewersList.innerHTML = "";
+    onsiteInterviewersSection.style.display = "none";
+  }
 
   feedbackCandidateModal.classList.add("show");
-  showHideOnsiteInterviewers(); // ensure correct display
 }
 
 feedbackStageSelect.addEventListener("change", showHideOnsiteInterviewers);
@@ -738,11 +803,11 @@ function saveFeedback() {
   if (!candidate.feedback) candidate.feedback = {};
 
   const stage = feedbackStageSelect.value;
-  const rating = feedbackRatingSelect.value; // "strong_no", "no", "yes", "strong_yes"
+  const rating = feedbackRatingSelect.value;
   const notesVal = feedbackNotes.value;
 
-  // If On-site, gather multiple interviewers
   if (stage === "On-site") {
+    // multiple interviewers
     const interviewBlocks = onsiteInterviewersList.querySelectorAll(".interviewer-block");
     const interviewsArr = [];
     interviewBlocks.forEach(block => {
@@ -758,7 +823,7 @@ function saveFeedback() {
     });
 
     candidate.feedback[stage] = {
-      rating, // overall rating
+      rating,
       notes: notesVal,
       interviews: interviewsArr
     };
@@ -790,14 +855,14 @@ function getFeedbackSummary(candidate) {
       const r = f.rating;
       const ratingClass = `rating-${r}`;
       html += `
-        <li data-stage="${stg}" data-candidateid="${candidate.id}">
+        <li data-stage="${stg}">
           <strong>${stg}:</strong> 
           <span class="${ratingClass}">${formatRating(r)}</span>
         </li>
       `;
     } else {
       html += `
-        <li data-stage="${stg}" data-candidateid="${candidate.id}">
+        <li data-stage="${stg}">
           <strong>${stg}:</strong>
           <span class="rating-none">None</span>
         </li>
@@ -853,32 +918,110 @@ function renderArchivedCandidates() {
     const job = jobs.find(j => j.id === c.jobId);
     const jobTitle = job ? job.title : "Unknown Job";
 
-    let historyHTML = "";
-    if (c.history && c.history.length > 0) {
-      c.history.forEach(h => {
-        historyHTML += `
-          <div class="history-item">
-            <strong>${new Date(h.date).toLocaleString()}</strong><br/>
-            <em>Action:</em> ${h.action}<br/>
-            <em>Desc:</em> ${h.description}<br/>
-            <em>Job ID:</em> ${h.jobId}, <em>Stage:</em> ${h.stage}
-          </div>
-        `;
-      });
-    } else {
-      historyHTML = `<p>No history recorded.</p>`;
-    }
+    let lastStage = c.stage;
 
     card.innerHTML = `
       <h4>${c.name} (${c.position})</h4>
       <p><strong>Last Job:</strong> ${jobTitle}</p>
-      <p><strong>Stage:</strong> ${c.stage}</p>
+      <p><strong>Stage:</strong> ${lastStage}</p>
       <p><strong>Email:</strong> ${c.email}</p>
       <p><strong>Notes:</strong> ${c.notes}</p>
       <hr/>
       <p><strong>History:</strong></p>
-      ${historyHTML}
     `;
+
+    const historyHTML = document.createElement("div");
+    if (c.history && c.history.length > 0) {
+      c.history.forEach(h => {
+        const block = document.createElement("div");
+        block.classList.add("history-item");
+        block.innerHTML = `
+          <strong>${new Date(h.date).toLocaleString()}</strong><br/>
+          <em>Action:</em> ${h.action}<br/>
+          <em>Desc:</em> ${h.description}<br/>
+          <em>Job ID:</em> ${h.jobId}, <em>Stage:</em> ${h.stage}
+        `;
+        historyHTML.appendChild(block);
+      });
+    } else {
+      historyHTML.innerHTML = `<p>No history recorded.</p>`;
+    }
+    card.appendChild(historyHTML);
+
+    // Clicking the name => open detail modal
+    const nameHeader = card.querySelector("h4");
+    nameHeader.addEventListener("click", () => openCandidateDetailModal(c.id));
+
     archivedList.appendChild(card);
   });
+}
+
+/************************************
+ * CANDIDATE DETAIL MODAL
+ ************************************/
+function openCandidateDetailModal(candidateId) {
+  const candidate = candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  // Build a big HTML snippet with candidate info, all feedback, and history
+  const job = jobs.find(j => j.id === candidate.jobId);
+  const jobTitle = job ? job.title : "Unknown";
+
+  let html = `
+    <h3>Basic Info</h3>
+    <p><strong>Name:</strong> ${candidate.name}</p>
+    <p><strong>Email:</strong> ${candidate.email}</p>
+    <p><strong>Position:</strong> ${candidate.position}</p>
+    <p><strong>Job:</strong> ${jobTitle}</p>
+    <p><strong>Stage:</strong> ${candidate.stage}</p>
+    <p><strong>Archived:</strong> ${candidate.archived ? "Yes" : "No"}</p>
+    <p><strong>Notes:</strong> ${candidate.notes}</p>
+    <p><strong>Source:</strong> ${candidate.sourceType}</p>
+  `;
+
+  // Show feedback for all stages
+  html += `<h3>Feedback</h3>`;
+  if (!candidate.feedback || Object.keys(candidate.feedback).length === 0) {
+    html += `<p>No feedback yet.</p>`;
+  } else {
+    STAGES.forEach(stg => {
+      if (candidate.feedback[stg]) {
+        const f = candidate.feedback[stg];
+        if (stg === "On-site" && f.interviews) {
+          // multiple interviews
+          html += `<div class="feedback-stage"><strong>${stg}:</strong> ${formatRating(f.rating)}<br/>
+            <em>Notes:</em> ${f.notes || ""}</div>`;
+          // interviews
+          f.interviews.forEach((intv, idx) => {
+            html += `<div class="feedback-stage" style="margin-left:20px;">
+              <strong>Interviewer #${idx + 1}:</strong> ${intv.name || ""}<br/>
+              <strong>Rating:</strong> ${formatRating(intv.rating)}<br/>
+              <em>Notes:</em> ${intv.notes || ""}
+            </div>`;
+          });
+        } else {
+          html += `<div class="feedback-stage"><strong>${stg}:</strong> ${formatRating(f.rating)}<br/>
+            <em>Notes:</em> ${f.notes || ""}</div>`;
+        }
+      }
+    });
+  }
+
+  // Show history
+  html += `<h3>History</h3>`;
+  if (!candidate.history || candidate.history.length === 0) {
+    html += `<p>No history recorded.</p>`;
+  } else {
+    candidate.history.forEach(h => {
+      html += `<div class="history-block">
+        <strong>${new Date(h.date).toLocaleString()}</strong><br/>
+        <em>Action:</em> ${h.action}<br/>
+        <em>Description:</em> ${h.description}<br/>
+        <em>Job ID:</em> ${h.jobId}, <em>Stage:</em> ${h.stage}
+      </div>`;
+    });
+  }
+
+  candidateDetailContent.innerHTML = html;
+  viewCandidateModal.classList.add("show");
 }
