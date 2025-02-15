@@ -18,9 +18,7 @@ h1, h2, h3, h4 {
   margin-bottom: 10px;
 }
 
-/* =========================
-   HEADER & HOME BUTTON
-========================= */
+/* HEADER & HOME BUTTON */
 header {
   display: flex;
   align-items: center;
@@ -89,9 +87,7 @@ header {
   background-color: #f2f2f2;
 }
 
-/* =========================
-   SEARCH
-========================= */
+/* SEARCH */
 .search-container {
   margin-bottom: 20px;
   display: flex;
@@ -105,21 +101,16 @@ header {
   border: 1px solid #ccc;
 }
 
-/* =========================
-   JOBS VIEW (Home)
-========================= */
+/* JOBS VIEW (Home) */
 #jobsView {
   margin-bottom: 30px;
 }
-
 #jobsList {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
 }
-
-/* Single job card */
 .job-card {
   background: #fff;
   border-radius: 8px;
@@ -128,23 +119,19 @@ header {
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   position: relative;
 }
-
 .job-card h4 {
   margin-bottom: 6px;
   font-size: 1.1rem;
 }
-
 .job-card p {
   margin: 4px 0;
   font-size: 0.9rem;
 }
-
 .job-actions {
   margin-top: 10px;
   display: flex;
   gap: 5px;
 }
-
 .job-actions button {
   background-color: #007bff;
   color: #fff;
@@ -155,12 +142,11 @@ header {
   cursor: pointer;
   transition: background 0.3s ease;
 }
-
 .job-actions button:hover {
   background-color: #0056b3;
 }
 
-/* The row containing "Add a New Job" and "Add a New Candidate" forms */
+/* Two side-by-side forms on home */
 .forms-row {
   display: flex;
   gap: 40px;
@@ -168,9 +154,7 @@ header {
   justify-content: flex-start;
 }
 
-/* =========================
-   FORM CONTAINERS
-========================= */
+/* FORM CONTAINERS */
 .form-container {
   background: #fff;
   border-radius: 8px;
@@ -178,7 +162,6 @@ header {
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
   width: 320px;
 }
-
 .form-container label {
   display: block;
   margin-top: 10px;
@@ -186,7 +169,6 @@ header {
   margin-bottom: 4px;
   font-size: 0.9rem;
 }
-
 .form-container input,
 .form-container textarea,
 .form-container select {
@@ -196,13 +178,11 @@ header {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 .candidate-source-group label {
   margin-right: 15px;
   font-weight: normal;
   font-size: 0.85rem;
 }
-
 .form-container button {
   margin-top: 20px;
   padding: 10px 16px;
@@ -214,14 +194,11 @@ header {
   border-radius: 4px;
   transition: background 0.3s ease;
 }
-
 .form-container button:hover {
   background-color: #218838;
 }
 
-/* =========================
-   BACK BUTTON
-========================= */
+/* BACK BUTTON */
 .back-btn {
   margin-top: 20px;
   background-color: #6c757d;
@@ -237,9 +214,7 @@ header {
   background-color: #5a6268;
 }
 
-/* =========================
-   JOB HEADER
-========================= */
+/* JOB HEADER (Pipeline) */
 .job-header {
   background: #fff;
   border-radius: 6px;
@@ -257,9 +232,7 @@ header {
   margin-bottom: 4px;
 }
 
-/* =========================
-   STATS BAR
-========================= */
+/* STATS BAR */
 .stats-bar {
   display: flex;
   flex-wrap: wrap;
@@ -280,9 +253,7 @@ header {
   font-weight: bold;
 }
 
-/* =========================
-   BOARD & COLUMNS
-========================= */
+/* BOARD & COLUMNS */
 .board {
   display: flex;
   gap: 10px;
@@ -330,9 +301,7 @@ header {
   background-color: #FF8000;
 }
 
-/* =========================
-   CANDIDATE CARD
-========================= */
+/* CANDIDATE CARD */
 .candidate-card {
   background-color: #fff;
   margin-bottom: 10px;
@@ -400,7 +369,7 @@ header {
 .candidate-feedback-summary li:hover {
   text-decoration: underline;
 }
-/* Rating classes */
+/* Ratings */
 .rating-strong_no {
   color: darkred;
   font-weight: bold;
@@ -438,16 +407,13 @@ header {
 .card-actions button:hover {
   background-color: #0056b3;
 }
-
 /* Drag & Drop highlight */
 .column-content.drag-over {
   background-color: #e0ffe0;
   border-color: #28a745;
 }
 
-/* =========================
-   MODALS
-========================= */
+/* MODALS */
 .modal {
   display: none;
   position: fixed;
@@ -517,7 +483,7 @@ header {
   background-color: #218838;
 }
 
-/* Candidate Detail Modal (larger) */
+/* Larger detail modal */
 #viewCandidateModal .modal-content {
   width: 600px;
   max-width: 90%;
