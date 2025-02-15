@@ -1,8 +1,6 @@
 /************************************
- * DATA & INITIAL STATE
+ * EXAMPLE DATA
  ************************************/
-
-// Example jobs
 let jobs = [
   {
     id: 101,
@@ -26,7 +24,6 @@ let jobs = [
   }
 ];
 
-// Example candidates
 let candidates = [
   {
     id: 1,
@@ -59,7 +56,7 @@ let candidates = [
 // Pipeline stages
 const STAGES = ["Applied", "Phone Screen", "HM Screen", "On-site", "Offer", "Hired"];
 
-// Track which job's pipeline is viewed
+// Track which job's pipeline is open
 let currentJobId = null;
 
 // For archiving
@@ -69,15 +66,16 @@ let jobToArchive = null;
 /************************************
  * DOM ELEMENTS
  ************************************/
-// Dropdown & top menu
+// Header
+const homeBtn = document.getElementById("homeBtn");
 const dropdownBtn = document.getElementById("dropdownBtn");
 const dropdownContent = document.getElementById("dropdownContent");
 const toggleFormBtn = document.getElementById("toggleFormBtn");
 const searchBtn = document.getElementById("searchBtn");
-const viewArchivedCandidatesBtn = document.getElementById("viewArchivedCandidatesBtn");
-const viewArchivedJobsBtn = document.getElementById("viewArchivedJobsBtn");
 const searchContainer = document.getElementById("searchContainer");
 const searchInput = document.getElementById("searchInput");
+const viewArchivedCandidatesBtn = document.getElementById("viewArchivedCandidatesBtn");
+const viewArchivedJobsBtn = document.getElementById("viewArchivedJobsBtn");
 
 // Views
 const jobsView = document.getElementById("jobsView");
@@ -89,6 +87,13 @@ const archivedJobsView = document.getElementById("archivedJobsView");
 const jobsList = document.getElementById("jobsList");
 const addJobForm = document.getElementById("addJobForm");
 
+// Home candidate form
+const homeCandidateForm = document.getElementById("homeCandidateForm");
+const homeCandidateName = document.getElementById("homeCandidateName");
+const homeCandidateEmail = document.getElementById("homeCandidateEmail");
+const homeCandidateJobSelect = document.getElementById("homeCandidateJobSelect");
+const homeCandidateNotes = document.getElementById("homeCandidateNotes");
+
 // Pipeline
 const jobHeader = document.getElementById("jobHeader");
 const statsBar = document.getElementById("statsBar");
@@ -99,17 +104,19 @@ const onsiteList = document.getElementById("onsiteList");
 const offerList = document.getElementById("offerList");
 const hiredList = document.getElementById("hiredList");
 
-// Candidate form
+// Pipeline candidate form
 const candidateFormContainer = document.getElementById("candidateFormContainer");
 const candidateForm = document.getElementById("candidateForm");
-const backToJobsBtn = document.getElementById("backToJobsBtn");
+const candidateName = document.getElementById("candidateName");
+const candidateEmail = document.getElementById("candidateEmail");
+const candidateJobSelect = document.getElementById("candidateJobSelect");
+const candidateNotes = document.getElementById("candidateNotes");
 
-// Archived candidates
+// Archived
 const archivedList = document.getElementById("archivedList");
-const backToJobsFromArchiveCandidatesBtn = document.getElementById("backToJobsFromArchiveCandidatesBtn");
-
-// Archived jobs
 const archivedJobsList = document.getElementById("archivedJobsList");
+const backToJobsBtn = document.getElementById("backToJobsBtn");
+const backToJobsFromArchiveCandidatesBtn = document.getElementById("backToJobsFromArchiveCandidatesBtn");
 const backToJobsFromArchiveJobsBtn = document.getElementById("backToJobsFromArchiveJobsBtn");
 
 // Edit Candidate Modal
@@ -133,7 +140,7 @@ const editJobLevel = document.getElementById("editJobLevel");
 const editJobCompRange = document.getElementById("editJobCompRange");
 const editJobNotes = document.getElementById("editJobNotes");
 
-// Transfer Modal
+// Transfer Candidate Modal
 const transferCandidateModal = document.getElementById("transferCandidateModal");
 const closeTransferModal = document.getElementById("closeTransferModal");
 const transferCandidateForm = document.getElementById("transferCandidateForm");
@@ -172,6 +179,16 @@ const candidateDetailContent = document.getElementById("candidateDetailContent")
 /************************************
  * EVENT LISTENERS
  ************************************/
+// Home Button
+homeBtn.addEventListener("click", () => {
+  currentJobId = null;
+  candidatesView.style.display = "none";
+  archivedCandidatesView.style.display = "none";
+  archivedJobsView.style.display = "none";
+  searchContainer.style.display = "none";
+  renderJobs();
+});
+
 // Dropdown
 dropdownBtn.addEventListener("click", () => {
   dropdownContent.style.display =
@@ -183,7 +200,7 @@ window.addEventListener("click", (e) => {
   }
 });
 
-// Search
+// Show/hide search
 searchBtn.addEventListener("click", () => {
   searchContainer.style.display =
     searchContainer.style.display === "none" ? "flex" : "none";
@@ -198,7 +215,7 @@ searchInput.addEventListener("input", () => {
   }
 });
 
-// View archived candidates
+// View archived
 viewArchivedCandidatesBtn.addEventListener("click", () => {
   jobsView.style.display = "none";
   candidatesView.style.display = "none";
@@ -206,8 +223,6 @@ viewArchivedCandidatesBtn.addEventListener("click", () => {
   archivedCandidatesView.style.display = "block";
   renderArchivedCandidates();
 });
-
-// View archived jobs
 viewArchivedJobsBtn.addEventListener("click", () => {
   jobsView.style.display = "none";
   candidatesView.style.display = "none";
@@ -216,24 +231,32 @@ viewArchivedJobsBtn.addEventListener("click", () => {
   renderArchivedJobs();
 });
 
-// Jobs
+// Add job form
 addJobForm.addEventListener("submit", (e) => {
   e.preventDefault();
   addNewJob();
 });
 
-// Candidates
+// Home candidate form
+homeCandidateForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  addCandidateFromHome();
+});
+
+// Pipeline add candidate form
+candidateForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  addCandidateFromPipeline();
+});
+
+// Toggle pipeline candidate form
 toggleFormBtn.addEventListener("click", () => {
   if (!currentJobId) return;
   candidateFormContainer.style.display =
     candidateFormContainer.style.display === "none" ? "block" : "none";
 });
-candidateForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  addNewCandidate();
-});
 
-// Pipeline nav
+// Back from pipeline
 backToJobsBtn.addEventListener("click", () => {
   candidatesView.style.display = "none";
   archivedCandidatesView.style.display = "none";
@@ -243,13 +266,11 @@ backToJobsBtn.addEventListener("click", () => {
   renderJobs();
 });
 
-// Archived candidates nav
+// Back from archived
 backToJobsFromArchiveCandidatesBtn.addEventListener("click", () => {
   archivedCandidatesView.style.display = "none";
   renderJobs();
 });
-
-// Archived jobs nav
 backToJobsFromArchiveJobsBtn.addEventListener("click", () => {
   archivedJobsView.style.display = "none";
   renderJobs();
@@ -270,9 +291,11 @@ closeFeedbackModal.addEventListener("click", () => {
 });
 closeArchiveModal.addEventListener("click", () => {
   archiveConfirmModal.classList.remove("show");
+  candidateToArchive = null;
 });
 closeArchiveJobModal.addEventListener("click", () => {
   archiveJobModal.classList.remove("show");
+  jobToArchive = null;
 });
 closeCandidateDetailModal.addEventListener("click", () => {
   viewCandidateModal.classList.remove("show");
@@ -306,25 +329,25 @@ archiveJobNoBtn.addEventListener("click", () => {
   jobToArchive = null;
 });
 
-// Edit Candidate
+// Edit candidate form
 editCandidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   saveCandidateEdits();
 });
 
-// Edit Job
+// Edit job form
 editJobForm.addEventListener("submit", (e) => {
   e.preventDefault();
   saveJobEdits();
 });
 
-// Transfer Candidate
+// Transfer candidate form
 transferCandidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   completeTransfer();
 });
 
-// Feedback
+// Feedback form
 feedbackCandidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   saveFeedback();
@@ -352,7 +375,7 @@ addInterviewerBtn.addEventListener("click", () => {
   onsiteInterviewersList.appendChild(block);
 });
 
-// Drag & drop columns
+// Drag & Drop pipeline columns
 document.querySelectorAll(".column-content").forEach((col) => {
   col.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -381,7 +404,42 @@ document.querySelectorAll(".column-content").forEach((col) => {
 renderJobs();
 
 /************************************
- * JOBS
+ * HELPER: Populate home candidate form
+ ************************************/
+function populateHomeCandidateDropdown() {
+  homeCandidateJobSelect.innerHTML = "";
+  // Only unarchived jobs
+  jobs.forEach(job => {
+    if (!job.archived) {
+      let opt = document.createElement("option");
+      opt.value = job.id;
+      opt.textContent = job.title;
+      homeCandidateJobSelect.appendChild(opt);
+    }
+  });
+}
+
+/************************************
+ * HELPER: Populate pipeline candidate form
+ ************************************/
+function populatePipelineCandidateDropdown() {
+  candidateJobSelect.innerHTML = "";
+  jobs.forEach(job => {
+    if (!job.archived) {
+      let opt = document.createElement("option");
+      opt.value = job.id;
+      opt.textContent = job.title;
+      candidateJobSelect.appendChild(opt);
+    }
+  });
+  // If we have a current job, default to it
+  if (currentJobId) {
+    candidateJobSelect.value = currentJobId.toString();
+  }
+}
+
+/************************************
+ * ADD NEW JOB
  ************************************/
 function addNewJob() {
   const title = document.getElementById("jobTitle").value;
@@ -407,18 +465,24 @@ function addNewJob() {
   renderJobs();
 }
 
+/************************************
+ * RENDER JOBS (Home)
+ ************************************/
 function renderJobs() {
-  // Show jobs, hide others
+  // Show home, hide pipeline & archived
   jobsView.style.display = "block";
   candidatesView.style.display = "none";
   archivedCandidatesView.style.display = "none";
   archivedJobsView.style.display = "none";
   toggleFormBtn.style.display = "none";
 
-  jobsList.innerHTML = "";
+  // Populate home candidate dropdown
+  populateHomeCandidateDropdown();
 
+  jobsList.innerHTML = "";
   // Show only unarchived jobs
   const activeJobs = jobs.filter(j => !j.archived);
+
   activeJobs.forEach((job) => {
     const card = document.createElement("div");
     card.classList.add("job-card");
@@ -439,7 +503,7 @@ function renderJobs() {
     // Buttons
     const viewBtn = card.querySelector(".view-pipeline-btn");
     const editBtn = card.querySelector(".edit-job-btn");
-    const archiveJobBtn = card.querySelector(".archive-job-btn");
+    const archiveBtn = card.querySelector(".archive-job-btn");
 
     // View pipeline
     viewBtn.addEventListener("click", () => {
@@ -457,45 +521,15 @@ function renderJobs() {
     editBtn.addEventListener("click", () => openEditJobModal(job.id));
 
     // Archive job
-    archiveJobBtn.addEventListener("click", () => {
+    archiveBtn.addEventListener("click", () => {
       jobToArchive = job;
       archiveJobModal.classList.add("show");
     });
   });
 }
 
-function openEditJobModal(jobId) {
-  const job = jobs.find(j => j.id === jobId);
-  if (!job) return;
-
-  editJobId.value = job.id;
-  editJobTitle.value = job.title;
-  editJobManager.value = job.manager;
-  editJobLevel.value = job.level;
-  editJobCompRange.value = job.compRange;
-  editJobNotes.value = job.notes;
-
-  editJobModal.classList.add("show");
-}
-
-function saveJobEdits() {
-  const id = Number(editJobId.value);
-  const job = jobs.find(j => j.id === id);
-  if (!job) return;
-
-  job.title = editJobTitle.value;
-  job.manager = editJobManager.value;
-  job.level = editJobLevel.value;
-  job.compRange = editJobCompRange.value;
-  job.notes = editJobNotes.value;
-
-  editJobModal.classList.remove("show");
-  recordJobHistory(job, "edit", "Job info updated");
-  renderJobs();
-}
-
 /************************************
- * PIPELINE
+ * RENDER PIPELINE
  ************************************/
 function renderPipeline() {
   const job = jobs.find(j => j.id === currentJobId);
@@ -517,6 +551,7 @@ function renderPipeline() {
   hiredList.innerHTML = "";
 
   renderStats();
+  populatePipelineCandidateDropdown();
 
   const jobCandidates = candidates.filter(c => c.jobId === currentJobId && !c.archived);
   const searchTerm = searchInput.value.toLowerCase();
@@ -548,6 +583,7 @@ function renderPipeline() {
     card.addEventListener("dragstart", handleDragStart);
     card.addEventListener("dragend", handleDragEnd);
 
+    // Buttons
     const editBtn = card.querySelector(".edit-btn");
     const archiveBtn = card.querySelector(".archive-btn");
     const transferBtn = card.querySelector(".transfer-btn");
@@ -561,9 +597,11 @@ function renderPipeline() {
     });
     transferBtn.addEventListener("click", () => openTransferModal(candidate.id));
     feedbackBtn.addEventListener("click", () => openFeedbackModal(candidate.id));
+
+    // Name => detail
     nameEl.addEventListener("click", () => openCandidateDetailModal(candidate.id));
 
-    // Make each feedback line clickable
+    // Feedback lines clickable
     const summaryContainer = card.querySelector(".candidate-feedback-summary");
     if (summaryContainer) {
       summaryContainer.querySelectorAll("li").forEach(li => {
@@ -574,28 +612,15 @@ function renderPipeline() {
       });
     }
 
+    // Place in correct column
     switch (candidate.stage) {
-      case "Applied":
-        appliedList.appendChild(card);
-        break;
-      case "Phone Screen":
-        phoneScreenList.appendChild(card);
-        break;
-      case "HM Screen":
-        hmScreenList.appendChild(card);
-        break;
-      case "On-site":
-        onsiteList.appendChild(card);
-        break;
-      case "Offer":
-        offerList.appendChild(card);
-        break;
-      case "Hired":
-        hiredList.appendChild(card);
-        break;
-      default:
-        appliedList.appendChild(card);
-        break;
+      case "Applied": appliedList.appendChild(card); break;
+      case "Phone Screen": phoneScreenList.appendChild(card); break;
+      case "HM Screen": hmScreenList.appendChild(card); break;
+      case "On-site": onsiteList.appendChild(card); break;
+      case "Offer": offerList.appendChild(card); break;
+      case "Hired": hiredList.appendChild(card); break;
+      default: appliedList.appendChild(card); break;
     }
   });
 }
@@ -611,31 +636,67 @@ function renderStats() {
   });
 }
 
-function addNewCandidate() {
-  if (!currentJobId) return;
+/************************************
+ * ADD CANDIDATE (Home)
+ ************************************/
+function addCandidateFromHome() {
+  let name = homeCandidateName.value;
+  let email = homeCandidateEmail.value;
+  let notes = homeCandidateNotes.value;
+  let source = document.querySelector('input[name="homeCandidateSource"]:checked').value;
+  let selectedJobId = Number(homeCandidateJobSelect.value);
 
-  const name = document.getElementById("candidateName").value;
-  const email = document.getElementById("candidateEmail").value;
-  const position = document.getElementById("candidatePosition").value;
-  const notes = document.getElementById("candidateNotes").value;
-  const sourceType = document.querySelector('input[name="candidateSource"]:checked').value;
+  let jobObj = jobs.find(j => j.id === selectedJobId);
+  let jobTitle = jobObj ? jobObj.title : "Unknown";
 
-  const newCandidate = {
+  let newCandidate = {
     id: Date.now(),
-    jobId: currentJobId,
+    jobId: selectedJobId,
     name,
     email,
-    position,
+    position: jobTitle,
     notes,
     stage: "Applied",
-    sourceType,
+    sourceType: source,
     archived: false,
     history: [],
     feedback: {}
   };
   candidates.push(newCandidate);
+  recordCandidateHistory(newCandidate, "create", `Candidate created for job ${selectedJobId}`);
 
-  recordCandidateHistory(newCandidate, "create", "Candidate created in job " + currentJobId);
+  homeCandidateForm.reset();
+  renderJobs();
+}
+
+/************************************
+ * ADD CANDIDATE (Pipeline)
+ ************************************/
+function addCandidateFromPipeline() {
+  let name = candidateName.value;
+  let email = candidateEmail.value;
+  let notes = candidateNotes.value;
+  let source = document.querySelector('input[name="candidateSource"]:checked').value;
+  let selectedJobId = Number(candidateJobSelect.value);
+
+  let jobObj = jobs.find(j => j.id === selectedJobId);
+  let jobTitle = jobObj ? jobObj.title : "Unknown";
+
+  let newCandidate = {
+    id: Date.now(),
+    jobId: selectedJobId,
+    name,
+    email,
+    position: jobTitle,
+    notes,
+    stage: "Applied",
+    sourceType: source,
+    archived: false,
+    history: [],
+    feedback: {}
+  };
+  candidates.push(newCandidate);
+  recordCandidateHistory(newCandidate, "create", `Candidate created for job ${selectedJobId}`);
 
   candidateForm.reset();
   candidateFormContainer.style.display = "none";
@@ -767,7 +828,7 @@ function renderArchivedJobs() {
 }
 
 /************************************
- * EDIT / ARCHIVE CANDIDATES
+ * EDIT CANDIDATE
  ************************************/
 function openEditCandidateModal(candidateId) {
   const candidate = candidates.find(c => c.id === candidateId);
@@ -807,6 +868,39 @@ function saveCandidateEdits() {
 }
 
 /************************************
+ * EDIT JOB
+ ************************************/
+function openEditJobModal(jobId) {
+  const job = jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  editJobId.value = job.id;
+  editJobTitle.value = job.title;
+  editJobManager.value = job.manager;
+  editJobLevel.value = job.level;
+  editJobCompRange.value = job.compRange;
+  editJobNotes.value = job.notes;
+
+  editJobModal.classList.add("show");
+}
+
+function saveJobEdits() {
+  const id = Number(editJobId.value);
+  const job = jobs.find(j => j.id === id);
+  if (!job) return;
+
+  job.title = editJobTitle.value;
+  job.manager = editJobManager.value;
+  job.level = editJobLevel.value;
+  job.compRange = editJobCompRange.value;
+  job.notes = editJobNotes.value;
+
+  editJobModal.classList.remove("show");
+  recordJobHistory(job, "edit", "Job info updated");
+  renderJobs();
+}
+
+/************************************
  * TRANSFER CANDIDATE
  ************************************/
 function openTransferModal(candidateId) {
@@ -815,7 +909,7 @@ function openTransferModal(candidateId) {
 
   transferCandidateId.value = candidate.id;
 
-  // Populate the job dropdown
+  // Populate job dropdown with unarchived jobs (excluding candidate's current job)
   transferJobSelect.innerHTML = "";
   jobs.forEach(job => {
     if (!job.archived && job.id !== candidate.jobId) {
@@ -854,7 +948,6 @@ function openFeedbackModal(candidateId, stage = null) {
 
   feedbackCandidateId.value = candidate.id;
 
-  // If a stage is provided, load existing feedback
   if (stage) {
     feedbackStageSelect.value = stage;
     if (candidate.feedback[stage]) {
@@ -891,7 +984,7 @@ function openFeedbackModal(candidateId, stage = null) {
         onsiteInterviewersSection.style.display = "none";
       }
     } else {
-      // no existing feedback
+      // No existing feedback
       feedbackRatingSelect.value = "no";
       feedbackNotes.value = "";
       onsiteInterviewersList.innerHTML = "";
@@ -942,17 +1035,9 @@ function saveFeedback() {
         notes: notesEl.value
       });
     });
-
-    candidate.feedback[stage] = {
-      rating,
-      notes: notesVal,
-      interviews: interviewsArr
-    };
+    candidate.feedback[stage] = { rating, notes: notesVal, interviews: interviewsArr };
   } else {
-    candidate.feedback[stage] = {
-      rating,
-      notes: notesVal
-    };
+    candidate.feedback[stage] = { rating, notes: notesVal };
   }
 
   recordCandidateHistory(candidate, "feedback", `Feedback saved for ${stage}`);
@@ -1014,13 +1099,30 @@ function recordCandidateHistory(candidate, actionType, desc) {
     stage: candidate.stage
   });
 }
-
 function recordJobHistory(job, actionType, desc) {
   job.jobHistory.push({
     date: new Date().toISOString(),
     action: actionType,
     description: desc
   });
+}
+
+/************************************
+ * DRAG & DROP
+ ************************************/
+let draggedCard = null;
+function handleDragStart(e) {
+  draggedCard = e.target;
+  e.dataTransfer.setData("text/plain", e.target.dataset.id);
+  setTimeout(() => {
+    e.target.style.display = "none";
+  }, 0);
+}
+function handleDragEnd(e) {
+  setTimeout(() => {
+    draggedCard.style.display = "block";
+    draggedCard = null;
+  }, 0);
 }
 
 /************************************
@@ -1045,7 +1147,7 @@ function openCandidateDetailModal(candidateId) {
     <p><strong>Source:</strong> ${candidate.sourceType}</p>
   `;
 
-  // Show feedback for all pipeline stages
+  // Feedback
   html += `<h3>Feedback</h3>`;
   if (!candidate.feedback || Object.keys(candidate.feedback).length === 0) {
     html += `<p>No feedback yet.</p>`;
@@ -1071,7 +1173,7 @@ function openCandidateDetailModal(candidateId) {
     });
   }
 
-  // Show history
+  // History
   html += `<h3>History</h3>`;
   if (!candidate.history || candidate.history.length === 0) {
     html += `<p>No history recorded.</p>`;
