@@ -10,7 +10,9 @@ let jobs = [
     manager: "Alice Johnson",
     level: "Senior",
     compRange: "$120k - $150k",
-    notes: "High-priority role. Full-stack focus."
+    notes: "High-priority role. Full-stack focus.",
+    archived: false,
+    jobHistory: []
   },
   {
     id: 102,
@@ -18,7 +20,9 @@ let jobs = [
     manager: "Bob Williams",
     level: "Mid",
     compRange: "$90k - $110k",
-    notes: "Agile experience needed."
+    notes: "Agile experience needed.",
+    archived: false,
+    jobHistory: []
   }
 ];
 
@@ -26,7 +30,7 @@ let jobs = [
 let candidates = [
   {
     id: 1,
-    jobId: 101, // belongs to "Software Engineer" job
+    jobId: 101,
     name: "Jane Doe",
     email: "jane@example.com",
     position: "Software Engineer",
@@ -35,13 +39,11 @@ let candidates = [
     sourceType: "applied",
     archived: false,
     history: [],
-    feedback: {
-      // "Phone Screen": { rating: "yes", notes: "..." },
-    }
+    feedback: {}
   },
   {
     id: 2,
-    jobId: 102, // belongs to "Project Manager" job
+    jobId: 102,
     name: "John Smith",
     email: "john@example.com",
     position: "Project Manager",
@@ -54,31 +56,34 @@ let candidates = [
   }
 ];
 
-// Possible pipeline stages
+// Pipeline stages
 const STAGES = ["Applied", "Phone Screen", "HM Screen", "On-site", "Offer", "Hired"];
 
-// Track which job's pipeline we're viewing
+// Track which job's pipeline is viewed
 let currentJobId = null;
 
-// We'll store which candidate is about to be archived
+// For archiving
 let candidateToArchive = null;
+let jobToArchive = null;
 
 /************************************
  * DOM ELEMENTS
  ************************************/
-// Top-level
+// Dropdown & top menu
 const dropdownBtn = document.getElementById("dropdownBtn");
 const dropdownContent = document.getElementById("dropdownContent");
 const toggleFormBtn = document.getElementById("toggleFormBtn");
 const searchBtn = document.getElementById("searchBtn");
+const viewArchivedCandidatesBtn = document.getElementById("viewArchivedCandidatesBtn");
+const viewArchivedJobsBtn = document.getElementById("viewArchivedJobsBtn");
 const searchContainer = document.getElementById("searchContainer");
 const searchInput = document.getElementById("searchInput");
-const viewArchivedBtn = document.getElementById("viewArchivedBtn");
 
 // Views
 const jobsView = document.getElementById("jobsView");
 const candidatesView = document.getElementById("candidatesView");
-const archivedView = document.getElementById("archivedView");
+const archivedCandidatesView = document.getElementById("archivedCandidatesView");
+const archivedJobsView = document.getElementById("archivedJobsView");
 
 // Jobs
 const jobsList = document.getElementById("jobsList");
@@ -94,14 +99,18 @@ const onsiteList = document.getElementById("onsiteList");
 const offerList = document.getElementById("offerList");
 const hiredList = document.getElementById("hiredList");
 
-// Candidate Form
+// Candidate form
 const candidateFormContainer = document.getElementById("candidateFormContainer");
 const candidateForm = document.getElementById("candidateForm");
 const backToJobsBtn = document.getElementById("backToJobsBtn");
 
-// Archived
+// Archived candidates
 const archivedList = document.getElementById("archivedList");
-const backToJobsFromArchiveBtn = document.getElementById("backToJobsFromArchiveBtn");
+const backToJobsFromArchiveCandidatesBtn = document.getElementById("backToJobsFromArchiveCandidatesBtn");
+
+// Archived jobs
+const archivedJobsList = document.getElementById("archivedJobsList");
+const backToJobsFromArchiveJobsBtn = document.getElementById("backToJobsFromArchiveJobsBtn");
 
 // Edit Candidate Modal
 const editCandidateModal = document.getElementById("editCandidateModal");
@@ -124,14 +133,14 @@ const editJobLevel = document.getElementById("editJobLevel");
 const editJobCompRange = document.getElementById("editJobCompRange");
 const editJobNotes = document.getElementById("editJobNotes");
 
-// Transfer Candidate Modal
+// Transfer Modal
 const transferCandidateModal = document.getElementById("transferCandidateModal");
 const closeTransferModal = document.getElementById("closeTransferModal");
 const transferCandidateForm = document.getElementById("transferCandidateForm");
 const transferCandidateId = document.getElementById("transferCandidateId");
 const transferJobSelect = document.getElementById("transferJobSelect");
 
-// Feedback Candidate Modal
+// Feedback Modal
 const feedbackCandidateModal = document.getElementById("feedbackCandidateModal");
 const closeFeedbackModal = document.getElementById("closeFeedbackModal");
 const feedbackCandidateForm = document.getElementById("feedbackCandidateForm");
@@ -143,11 +152,17 @@ const onsiteInterviewersSection = document.getElementById("onsiteInterviewersSec
 const addInterviewerBtn = document.getElementById("addInterviewerBtn");
 const onsiteInterviewersList = document.getElementById("onsiteInterviewersList");
 
-// Archive Confirm Modal
+// Archive Candidate Confirm Modal
 const archiveConfirmModal = document.getElementById("archiveConfirmModal");
 const closeArchiveModal = document.getElementById("closeArchiveModal");
 const archiveYesBtn = document.getElementById("archiveYesBtn");
 const archiveNoBtn = document.getElementById("archiveNoBtn");
+
+// Archive Job Confirm Modal
+const archiveJobModal = document.getElementById("archiveJobModal");
+const closeArchiveJobModal = document.getElementById("closeArchiveJobModal");
+const archiveJobYesBtn = document.getElementById("archiveJobYesBtn");
+const archiveJobNoBtn = document.getElementById("archiveJobNoBtn");
 
 // Candidate Detail Modal
 const viewCandidateModal = document.getElementById("viewCandidateModal");
@@ -157,20 +172,18 @@ const candidateDetailContent = document.getElementById("candidateDetailContent")
 /************************************
  * EVENT LISTENERS
  ************************************/
-// Dropdown menu
+// Dropdown
 dropdownBtn.addEventListener("click", () => {
   dropdownContent.style.display =
     dropdownContent.style.display === "block" ? "none" : "block";
 });
-
-// Close dropdown if clicked outside
-window.addEventListener("click", (event) => {
-  if (!event.target.matches("#dropdownBtn")) {
+window.addEventListener("click", (e) => {
+  if (!e.target.matches("#dropdownBtn")) {
     dropdownContent.style.display = "none";
   }
 });
 
-// Show/hide search bar
+// Search
 searchBtn.addEventListener("click", () => {
   searchContainer.style.display =
     searchContainer.style.display === "none" ? "flex" : "none";
@@ -179,20 +192,28 @@ searchBtn.addEventListener("click", () => {
     renderPipeline();
   }
 });
+searchInput.addEventListener("input", () => {
+  if (currentJobId) {
+    renderPipeline();
+  }
+});
 
-// View archived
-viewArchivedBtn.addEventListener("click", () => {
-  // Show archived view
+// View archived candidates
+viewArchivedCandidatesBtn.addEventListener("click", () => {
   jobsView.style.display = "none";
   candidatesView.style.display = "none";
-  archivedView.style.display = "block";
+  archivedJobsView.style.display = "none";
+  archivedCandidatesView.style.display = "block";
   renderArchivedCandidates();
 });
 
-// Back from archived to jobs
-backToJobsFromArchiveBtn.addEventListener("click", () => {
-  archivedView.style.display = "none";
-  renderJobs();
+// View archived jobs
+viewArchivedJobsBtn.addEventListener("click", () => {
+  jobsView.style.display = "none";
+  candidatesView.style.display = "none";
+  archivedCandidatesView.style.display = "none";
+  archivedJobsView.style.display = "block";
+  renderArchivedJobs();
 });
 
 // Jobs
@@ -212,38 +233,26 @@ candidateForm.addEventListener("submit", (e) => {
   addNewCandidate();
 });
 
-// Back to jobs
+// Pipeline nav
 backToJobsBtn.addEventListener("click", () => {
   candidatesView.style.display = "none";
-  jobsView.style.display = "block";
+  archivedCandidatesView.style.display = "none";
+  archivedJobsView.style.display = "none";
   currentJobId = null;
   searchContainer.style.display = "none";
   renderJobs();
 });
 
-// Drag & drop on each column
-document.querySelectorAll(".column-content").forEach((col) => {
-  col.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    col.classList.add("drag-over");
-  });
+// Archived candidates nav
+backToJobsFromArchiveCandidatesBtn.addEventListener("click", () => {
+  archivedCandidatesView.style.display = "none";
+  renderJobs();
+});
 
-  col.addEventListener("dragleave", () => {
-    col.classList.remove("drag-over");
-  });
-
-  col.addEventListener("drop", (e) => {
-    e.preventDefault();
-    col.classList.remove("drag-over");
-    const candidateId = e.dataTransfer.getData("text/plain");
-    const found = candidates.find((c) => c.id.toString() === candidateId);
-    if (found) {
-      const newStage = col.parentNode.getAttribute("data-stage");
-      recordHistory(found, "stage_change", `Moved from ${found.stage} to ${newStage}`);
-      found.stage = newStage;
-      renderPipeline();
-    }
-  });
+// Archived jobs nav
+backToJobsFromArchiveJobsBtn.addEventListener("click", () => {
+  archivedJobsView.style.display = "none";
+  renderJobs();
 });
 
 // Close modals
@@ -262,15 +271,18 @@ closeFeedbackModal.addEventListener("click", () => {
 closeArchiveModal.addEventListener("click", () => {
   archiveConfirmModal.classList.remove("show");
 });
+closeArchiveJobModal.addEventListener("click", () => {
+  archiveJobModal.classList.remove("show");
+});
 closeCandidateDetailModal.addEventListener("click", () => {
   viewCandidateModal.classList.remove("show");
 });
 
-// Archive confirm
+// Archive candidate confirm
 archiveYesBtn.addEventListener("click", () => {
   if (!candidateToArchive) return;
   candidateToArchive.archived = true;
-  recordHistory(candidateToArchive, "archive", "Candidate archived");
+  recordCandidateHistory(candidateToArchive, "archive", "Candidate archived");
   archiveConfirmModal.classList.remove("show");
   candidateToArchive = null;
   renderPipeline();
@@ -280,31 +292,45 @@ archiveNoBtn.addEventListener("click", () => {
   candidateToArchive = null;
 });
 
-// Edit Candidate form
+// Archive job confirm
+archiveJobYesBtn.addEventListener("click", () => {
+  if (!jobToArchive) return;
+  jobToArchive.archived = true;
+  recordJobHistory(jobToArchive, "archive", "Job archived");
+  archiveJobModal.classList.remove("show");
+  jobToArchive = null;
+  renderJobs();
+});
+archiveJobNoBtn.addEventListener("click", () => {
+  archiveJobModal.classList.remove("show");
+  jobToArchive = null;
+});
+
+// Edit Candidate
 editCandidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   saveCandidateEdits();
 });
 
-// Edit Job form
+// Edit Job
 editJobForm.addEventListener("submit", (e) => {
   e.preventDefault();
   saveJobEdits();
 });
 
-// Transfer Candidate form
+// Transfer Candidate
 transferCandidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   completeTransfer();
 });
 
-// Feedback form
+// Feedback
 feedbackCandidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   saveFeedback();
 });
 
-// On-site multiple interviewers
+// On-site interviewers
 addInterviewerBtn.addEventListener("click", () => {
   const block = document.createElement("div");
   block.classList.add("interviewer-block");
@@ -326,13 +352,36 @@ addInterviewerBtn.addEventListener("click", () => {
   onsiteInterviewersList.appendChild(block);
 });
 
+// Drag & drop columns
+document.querySelectorAll(".column-content").forEach((col) => {
+  col.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    col.classList.add("drag-over");
+  });
+  col.addEventListener("dragleave", () => {
+    col.classList.remove("drag-over");
+  });
+  col.addEventListener("drop", (e) => {
+    e.preventDefault();
+    col.classList.remove("drag-over");
+    const candidateId = e.dataTransfer.getData("text/plain");
+    const found = candidates.find((c) => c.id.toString() === candidateId);
+    if (found) {
+      const newStage = col.parentNode.getAttribute("data-stage");
+      recordCandidateHistory(found, "stage_change", `Moved from ${found.stage} to ${newStage}`);
+      found.stage = newStage;
+      renderPipeline();
+    }
+  });
+});
+
 /************************************
  * INIT
  ************************************/
-renderJobs(); // Show jobs view by default
+renderJobs();
 
 /************************************
- * JOBS FUNCTIONS
+ * JOBS
  ************************************/
 function addNewJob() {
   const title = document.getElementById("jobTitle").value;
@@ -347,29 +396,30 @@ function addNewJob() {
     manager,
     level,
     compRange,
-    notes
+    notes,
+    archived: false,
+    jobHistory: []
   };
   jobs.push(newJob);
+  recordJobHistory(newJob, "create", "Job created");
 
-  // Reset form
   addJobForm.reset();
-
-  // Re-render
   renderJobs();
 }
 
 function renderJobs() {
-  // Show jobs, hide pipeline & archive
+  // Show jobs, hide others
   jobsView.style.display = "block";
   candidatesView.style.display = "none";
-  archivedView.style.display = "none";
-
-  // Hide "Add Candidate Form" button on the home page
+  archivedCandidatesView.style.display = "none";
+  archivedJobsView.style.display = "none";
   toggleFormBtn.style.display = "none";
 
   jobsList.innerHTML = "";
 
-  jobs.forEach((job) => {
+  // Show only unarchived jobs
+  const activeJobs = jobs.filter(j => !j.archived);
+  activeJobs.forEach((job) => {
     const card = document.createElement("div");
     card.classList.add("job-card");
     card.innerHTML = `
@@ -381,7 +431,7 @@ function renderJobs() {
       <div class="job-actions">
         <button class="view-pipeline-btn">View Pipeline</button>
         <button class="edit-job-btn">Edit</button>
-        <button class="delete-job-btn">Delete</button>
+        <button class="archive-job-btn">Archive</button>
       </div>
     `;
     jobsList.appendChild(card);
@@ -389,30 +439,27 @@ function renderJobs() {
     // Buttons
     const viewBtn = card.querySelector(".view-pipeline-btn");
     const editBtn = card.querySelector(".edit-job-btn");
-    const deleteBtn = card.querySelector(".delete-job-btn");
+    const archiveJobBtn = card.querySelector(".archive-job-btn");
 
     // View pipeline
     viewBtn.addEventListener("click", () => {
       currentJobId = job.id;
       jobsView.style.display = "none";
-      archivedView.style.display = "none";
+      archivedCandidatesView.style.display = "none";
+      archivedJobsView.style.display = "none";
       candidatesView.style.display = "block";
       candidateFormContainer.style.display = "none";
-      toggleFormBtn.style.display = "inline-block"; // show "Add Candidate" button
-
+      toggleFormBtn.style.display = "inline-block";
       renderPipeline();
     });
 
-    // Edit job
+    // Edit
     editBtn.addEventListener("click", () => openEditJobModal(job.id));
 
-    // Delete job
-    deleteBtn.addEventListener("click", () => {
-      // Remove all candidates associated with this job
-      candidates = candidates.filter(c => c.jobId !== job.id);
-      // Remove the job
-      jobs = jobs.filter(j => j.id !== job.id);
-      renderJobs();
+    // Archive job
+    archiveJobBtn.addEventListener("click", () => {
+      jobToArchive = job;
+      archiveJobModal.classList.add("show");
     });
   });
 }
@@ -443,18 +490,17 @@ function saveJobEdits() {
   job.notes = editJobNotes.value;
 
   editJobModal.classList.remove("show");
+  recordJobHistory(job, "edit", "Job info updated");
   renderJobs();
 }
 
 /************************************
- * PIPELINE / CANDIDATES FUNCTIONS
+ * PIPELINE
  ************************************/
 function renderPipeline() {
-  // Find the current job
   const job = jobs.find(j => j.id === currentJobId);
   if (!job) return;
 
-  // Show job header at top of pipeline
   jobHeader.innerHTML = `
     <h2>${job.title}</h2>
     <p class="job-subdetails">Manager: ${job.manager}</p>
@@ -463,7 +509,6 @@ function renderPipeline() {
     <p class="job-subdetails">Notes: ${job.notes}</p>
   `;
 
-  // Clear columns
   appliedList.innerHTML = "";
   phoneScreenList.innerHTML = "";
   hmScreenList.innerHTML = "";
@@ -471,37 +516,27 @@ function renderPipeline() {
   offerList.innerHTML = "";
   hiredList.innerHTML = "";
 
-  // Stats
   renderStats();
 
-  // Filter for candidates in this job and not archived
   const jobCandidates = candidates.filter(c => c.jobId === currentJobId && !c.archived);
   const searchTerm = searchInput.value.toLowerCase();
 
   jobCandidates.forEach(candidate => {
-    // Filter by search name
-    if (!candidate.name.toLowerCase().includes(searchTerm)) {
-      return;
-    }
+    if (!candidate.name.toLowerCase().includes(searchTerm)) return;
 
-    // Create card
     const card = document.createElement("div");
     card.className = "candidate-card";
     card.draggable = true;
     card.dataset.id = candidate.id;
 
-    // Build a feedback summary snippet
     const feedbackSummary = getFeedbackSummary(candidate);
-
     card.innerHTML = `
       <span class="candidate-name">${candidate.name}</span>
       <span class="candidate-position">${candidate.position}</span>
       <span class="candidate-email">${candidate.email}</span>
       <p class="candidate-notes">${candidate.notes}</p>
       <p><span class="candidate-source">${candidate.sourceType}</span></p>
-
       ${feedbackSummary}
-
       <div class="card-actions">
         <button class="edit-btn">Edit</button>
         <button class="archive-btn">Archive</button>
@@ -510,11 +545,9 @@ function renderPipeline() {
       </div>
     `;
 
-    // Drag events
     card.addEventListener("dragstart", handleDragStart);
     card.addEventListener("dragend", handleDragEnd);
 
-    // Buttons
     const editBtn = card.querySelector(".edit-btn");
     const archiveBtn = card.querySelector(".archive-btn");
     const transferBtn = card.querySelector(".transfer-btn");
@@ -522,14 +555,15 @@ function renderPipeline() {
     const nameEl = card.querySelector(".candidate-name");
 
     editBtn.addEventListener("click", () => openEditCandidateModal(candidate.id));
-    archiveBtn.addEventListener("click", () => openArchiveModal(candidate));
+    archiveBtn.addEventListener("click", () => {
+      candidateToArchive = candidate;
+      archiveConfirmModal.classList.add("show");
+    });
     transferBtn.addEventListener("click", () => openTransferModal(candidate.id));
     feedbackBtn.addEventListener("click", () => openFeedbackModal(candidate.id));
-
-    // Candidate name => open detail modal
     nameEl.addEventListener("click", () => openCandidateDetailModal(candidate.id));
 
-    // For each feedback <li> (stage summary), we want it clickable => open existing feedback
+    // Make each feedback line clickable
     const summaryContainer = card.querySelector(".candidate-feedback-summary");
     if (summaryContainer) {
       summaryContainer.querySelectorAll("li").forEach(li => {
@@ -540,7 +574,6 @@ function renderPipeline() {
       });
     }
 
-    // Place in correct column
     switch (candidate.stage) {
       case "Applied":
         appliedList.appendChild(card);
@@ -569,7 +602,6 @@ function renderPipeline() {
 
 function renderStats() {
   statsBar.innerHTML = "";
-
   STAGES.forEach(stage => {
     const count = candidates.filter(c => c.jobId === currentJobId && !c.archived && c.stage === stage).length;
     const statItem = document.createElement("div");
@@ -579,7 +611,6 @@ function renderStats() {
   });
 }
 
-/** Add new candidate for the current job */
 function addNewCandidate() {
   if (!currentJobId) return;
 
@@ -604,41 +635,139 @@ function addNewCandidate() {
   };
   candidates.push(newCandidate);
 
-  // Record initial creation
-  recordHistory(newCandidate, "create", "Candidate created in job " + currentJobId);
+  recordCandidateHistory(newCandidate, "create", "Candidate created in job " + currentJobId);
 
-  // Clear form
   candidateForm.reset();
   candidateFormContainer.style.display = "none";
   renderPipeline();
 }
 
-/** Drag & Drop */
-let draggedCard = null;
-function handleDragStart(e) {
-  draggedCard = e.target;
-  e.dataTransfer.setData("text/plain", e.target.dataset.id);
-  setTimeout(() => {
-    e.target.style.display = "none";
-  }, 0);
-}
-function handleDragEnd(e) {
-  setTimeout(() => {
-    draggedCard.style.display = "block";
-    draggedCard = null;
-  }, 0);
-}
-
 /************************************
- * ARCHIVE
+ * ARCHIVED CANDIDATES
  ************************************/
-function openArchiveModal(candidate) {
-  candidateToArchive = candidate;
-  archiveConfirmModal.classList.add("show");
+function renderArchivedCandidates() {
+  archivedCandidatesView.style.display = "block";
+  archivedList.innerHTML = "";
+
+  const archCands = candidates.filter(c => c.archived);
+  if (archCands.length === 0) {
+    archivedList.innerHTML = `<p>No archived candidates found.</p>`;
+    return;
+  }
+
+  archCands.forEach(c => {
+    const card = document.createElement("div");
+    card.classList.add("archived-card");
+    const job = jobs.find(j => j.id === c.jobId);
+    const jobTitle = job ? job.title : "Unknown Job";
+
+    card.innerHTML = `
+      <h4>${c.name} (${c.position})</h4>
+      <p><strong>Last Job:</strong> ${jobTitle}</p>
+      <p><strong>Stage:</strong> ${c.stage}</p>
+      <p><strong>Email:</strong> ${c.email}</p>
+      <p><strong>Notes:</strong> ${c.notes}</p>
+      <div class="card-actions" style="margin-top:10px;">
+        <button class="unarchive-btn">Unarchive</button>
+      </div>
+      <hr/>
+      <p><strong>History:</strong></p>
+    `;
+
+    const historyContainer = document.createElement("div");
+    if (c.history && c.history.length > 0) {
+      c.history.forEach(h => {
+        const block = document.createElement("div");
+        block.classList.add("history-item");
+        block.innerHTML = `
+          <strong>${new Date(h.date).toLocaleString()}</strong><br/>
+          <em>Action:</em> ${h.action}<br/>
+          <em>Desc:</em> ${h.description}<br/>
+          <em>Job ID:</em> ${h.jobId}, <em>Stage:</em> ${h.stage}
+        `;
+        historyContainer.appendChild(block);
+      });
+    } else {
+      historyContainer.innerHTML = `<p>No history recorded.</p>`;
+    }
+    card.appendChild(historyContainer);
+
+    // Name => detail
+    const nameHeader = card.querySelector("h4");
+    nameHeader.addEventListener("click", () => openCandidateDetailModal(c.id));
+
+    // Unarchive
+    const unarchiveBtn = card.querySelector(".unarchive-btn");
+    unarchiveBtn.addEventListener("click", () => {
+      c.archived = false;
+      recordCandidateHistory(c, "unarchive", "Candidate unarchived");
+      renderArchivedCandidates();
+    });
+
+    archivedList.appendChild(card);
+  });
 }
 
 /************************************
- * EDIT CANDIDATE
+ * ARCHIVED JOBS
+ ************************************/
+function renderArchivedJobs() {
+  archivedJobsView.style.display = "block";
+  archivedJobsList.innerHTML = "";
+
+  const archJobs = jobs.filter(j => j.archived);
+  if (archJobs.length === 0) {
+    archivedJobsList.innerHTML = `<p>No archived jobs found.</p>`;
+    return;
+  }
+
+  archJobs.forEach(jb => {
+    const card = document.createElement("div");
+    card.classList.add("archived-card");
+    card.innerHTML = `
+      <h4>${jb.title}</h4>
+      <p><strong>Manager:</strong> ${jb.manager}</p>
+      <p><strong>Level:</strong> ${jb.level || ""}</p>
+      <p><strong>Comp Range:</strong> ${jb.compRange || ""}</p>
+      <p><strong>Notes:</strong> ${jb.notes || ""}</p>
+      <div class="card-actions" style="margin-top:10px;">
+        <button class="unarchive-btn">Unarchive</button>
+      </div>
+      <hr/>
+      <p><strong>History:</strong></p>
+    `;
+
+    const historyContainer = document.createElement("div");
+    if (jb.jobHistory && jb.jobHistory.length > 0) {
+      jb.jobHistory.forEach(h => {
+        const block = document.createElement("div");
+        block.classList.add("history-item");
+        block.innerHTML = `
+          <strong>${new Date(h.date).toLocaleString()}</strong><br/>
+          <em>Action:</em> ${h.action}<br/>
+          <em>Desc:</em> ${h.description}
+        `;
+        historyContainer.appendChild(block);
+      });
+    } else {
+      historyContainer.innerHTML = `<p>No job history recorded.</p>`;
+    }
+    card.appendChild(historyContainer);
+
+    // Unarchive
+    const unarchiveBtn = card.querySelector(".unarchive-btn");
+    unarchiveBtn.addEventListener("click", () => {
+      jb.archived = false;
+      recordJobHistory(jb, "unarchive", "Job unarchived");
+      renderArchivedJobs();
+    });
+
+    archivedJobsList.appendChild(card);
+  });
+}
+
+/************************************
+ * EDIT / ARCHIVE CANDIDATES
  ************************************/
 function openEditCandidateModal(candidateId) {
   const candidate = candidates.find(c => c.id === candidateId);
@@ -673,12 +802,12 @@ function saveCandidateEdits() {
   candidate.sourceType = sourceType;
 
   editCandidateModal.classList.remove("show");
-  recordHistory(candidate, "edit", "Candidate info updated");
+  recordCandidateHistory(candidate, "edit", "Candidate info updated");
   renderPipeline();
 }
 
 /************************************
- * TRANSFER
+ * TRANSFER CANDIDATE
  ************************************/
 function openTransferModal(candidateId) {
   const candidate = candidates.find(c => c.id === candidateId);
@@ -686,10 +815,10 @@ function openTransferModal(candidateId) {
 
   transferCandidateId.value = candidate.id;
 
-  // Populate the job dropdown with all jobs except the current one
+  // Populate the job dropdown
   transferJobSelect.innerHTML = "";
   jobs.forEach(job => {
-    if (job.id !== candidate.jobId) {
+    if (!job.archived && job.id !== candidate.jobId) {
       const option = document.createElement("option");
       option.value = job.id;
       option.textContent = job.title;
@@ -706,9 +835,9 @@ function completeTransfer() {
   if (!candidate) return;
 
   const newJobId = Number(transferJobSelect.value);
-  recordHistory(candidate, "job_transfer", `Transferred from job ${candidate.jobId} to job ${newJobId}`);
+  recordCandidateHistory(candidate, "job_transfer", `Transferred from job ${candidate.jobId} to job ${newJobId}`);
   candidate.jobId = newJobId;
-  candidate.stage = "Applied"; // default them to "Applied" in the new job
+  candidate.stage = "Applied";
 
   transferCandidateModal.classList.remove("show");
   renderPipeline();
@@ -717,6 +846,8 @@ function completeTransfer() {
 /************************************
  * FEEDBACK
  ************************************/
+feedbackStageSelect.addEventListener("change", showHideOnsiteInterviewers);
+
 function openFeedbackModal(candidateId, stage = null) {
   const candidate = candidates.find(c => c.id === candidateId);
   if (!candidate) return;
@@ -727,11 +858,9 @@ function openFeedbackModal(candidateId, stage = null) {
   if (stage) {
     feedbackStageSelect.value = stage;
     if (candidate.feedback[stage]) {
-      // existing rating/notes
       const f = candidate.feedback[stage];
       feedbackRatingSelect.value = f.rating || "no";
       feedbackNotes.value = f.notes || "";
-      // If on-site with multiple interviewers
       if (stage === "On-site") {
         onsiteInterviewersList.innerHTML = "";
         onsiteInterviewersSection.style.display = "block";
@@ -742,7 +871,6 @@ function openFeedbackModal(candidateId, stage = null) {
             block.innerHTML = `
               <label>Name</label>
               <input type="text" class="interviewer-name" value="${intv.name || ""}" />
-
               <label>Rating</label>
               <select class="interviewer-rating">
                 <option value="strong_no">Strong No</option>
@@ -750,13 +878,10 @@ function openFeedbackModal(candidateId, stage = null) {
                 <option value="yes">Yes</option>
                 <option value="strong_yes">Strong Yes</option>
               </select>
-
               <label>Notes</label>
               <textarea class="interviewer-notes">${intv.notes || ""}</textarea>
             `;
             onsiteInterviewersList.appendChild(block);
-
-            // set rating
             const ratingSel = block.querySelector(".interviewer-rating");
             if (ratingSel) ratingSel.value = intv.rating || "no";
           });
@@ -784,14 +909,12 @@ function openFeedbackModal(candidateId, stage = null) {
   feedbackCandidateModal.classList.add("show");
 }
 
-feedbackStageSelect.addEventListener("change", showHideOnsiteInterviewers);
-
 function showHideOnsiteInterviewers() {
   if (feedbackStageSelect.value === "On-site") {
     onsiteInterviewersSection.style.display = "block";
   } else {
     onsiteInterviewersSection.style.display = "none";
-    onsiteInterviewersList.innerHTML = ""; // clear
+    onsiteInterviewersList.innerHTML = "";
   }
 }
 
@@ -807,14 +930,12 @@ function saveFeedback() {
   const notesVal = feedbackNotes.value;
 
   if (stage === "On-site") {
-    // multiple interviewers
     const interviewBlocks = onsiteInterviewersList.querySelectorAll(".interviewer-block");
     const interviewsArr = [];
     interviewBlocks.forEach(block => {
       const nameEl = block.querySelector(".interviewer-name");
       const ratingEl = block.querySelector(".interviewer-rating");
       const notesEl = block.querySelector(".interviewer-notes");
-
       interviewsArr.push({
         name: nameEl.value,
         rating: ratingEl.value,
@@ -834,23 +955,21 @@ function saveFeedback() {
     };
   }
 
-  recordHistory(candidate, "feedback", `Feedback saved for ${stage}`);
+  recordCandidateHistory(candidate, "feedback", `Feedback saved for ${stage}`);
   feedbackCandidateModal.classList.remove("show");
   renderPipeline();
 }
 
-/**
- * Summarize feedback in the candidate card, with clickable items
- */
+/************************************
+ * FEEDBACK SUMMARY
+ ************************************/
 function getFeedbackSummary(candidate) {
   const stagesToShow = ["Phone Screen", "HM Screen", "On-site", "Offer"];
-
   let html = `<div class="candidate-feedback-summary">
     <p style="margin-bottom:2px;">Feedback:</p>
     <ul>`;
-
   stagesToShow.forEach(stg => {
-    if (candidate.feedback && candidate.feedback[stg]) {
+    if (candidate.feedback[stg]) {
       const f = candidate.feedback[stg];
       const r = f.rating;
       const ratingClass = `rating-${r}`;
@@ -869,12 +988,10 @@ function getFeedbackSummary(candidate) {
       `;
     }
   });
-
   html += `</ul></div>`;
   return html;
 }
 
-/** Convert rating codes to readable text: "strong_no" -> "Strong No" */
 function formatRating(r) {
   switch (r) {
     case "strong_no": return "Strong No";
@@ -886,10 +1003,9 @@ function formatRating(r) {
 }
 
 /************************************
- * HISTORY
+ * HISTORY RECORDING
  ************************************/
-function recordHistory(candidate, actionType, desc) {
-  if (!candidate.history) candidate.history = [];
+function recordCandidateHistory(candidate, actionType, desc) {
   candidate.history.push({
     date: new Date().toISOString(),
     action: actionType,
@@ -899,60 +1015,11 @@ function recordHistory(candidate, actionType, desc) {
   });
 }
 
-/************************************
- * ARCHIVED CANDIDATES
- ************************************/
-function renderArchivedCandidates() {
-  archivedList.innerHTML = "";
-
-  const archivedCandidates = candidates.filter(c => c.archived);
-
-  if (archivedCandidates.length === 0) {
-    archivedList.innerHTML = `<p>No archived candidates found.</p>`;
-    return;
-  }
-
-  archivedCandidates.forEach(c => {
-    const card = document.createElement("div");
-    card.classList.add("archived-card");
-    const job = jobs.find(j => j.id === c.jobId);
-    const jobTitle = job ? job.title : "Unknown Job";
-
-    let lastStage = c.stage;
-
-    card.innerHTML = `
-      <h4>${c.name} (${c.position})</h4>
-      <p><strong>Last Job:</strong> ${jobTitle}</p>
-      <p><strong>Stage:</strong> ${lastStage}</p>
-      <p><strong>Email:</strong> ${c.email}</p>
-      <p><strong>Notes:</strong> ${c.notes}</p>
-      <hr/>
-      <p><strong>History:</strong></p>
-    `;
-
-    const historyHTML = document.createElement("div");
-    if (c.history && c.history.length > 0) {
-      c.history.forEach(h => {
-        const block = document.createElement("div");
-        block.classList.add("history-item");
-        block.innerHTML = `
-          <strong>${new Date(h.date).toLocaleString()}</strong><br/>
-          <em>Action:</em> ${h.action}<br/>
-          <em>Desc:</em> ${h.description}<br/>
-          <em>Job ID:</em> ${h.jobId}, <em>Stage:</em> ${h.stage}
-        `;
-        historyHTML.appendChild(block);
-      });
-    } else {
-      historyHTML.innerHTML = `<p>No history recorded.</p>`;
-    }
-    card.appendChild(historyHTML);
-
-    // Clicking the name => open detail modal
-    const nameHeader = card.querySelector("h4");
-    nameHeader.addEventListener("click", () => openCandidateDetailModal(c.id));
-
-    archivedList.appendChild(card);
+function recordJobHistory(job, actionType, desc) {
+  job.jobHistory.push({
+    date: new Date().toISOString(),
+    action: actionType,
+    description: desc
   });
 }
 
@@ -963,7 +1030,6 @@ function openCandidateDetailModal(candidateId) {
   const candidate = candidates.find(c => c.id === candidateId);
   if (!candidate) return;
 
-  // Build a big HTML snippet with candidate info, all feedback, and history
   const job = jobs.find(j => j.id === candidate.jobId);
   const jobTitle = job ? job.title : "Unknown";
 
@@ -979,7 +1045,7 @@ function openCandidateDetailModal(candidateId) {
     <p><strong>Source:</strong> ${candidate.sourceType}</p>
   `;
 
-  // Show feedback for all stages
+  // Show feedback for all pipeline stages
   html += `<h3>Feedback</h3>`;
   if (!candidate.feedback || Object.keys(candidate.feedback).length === 0) {
     html += `<p>No feedback yet.</p>`;
@@ -988,10 +1054,8 @@ function openCandidateDetailModal(candidateId) {
       if (candidate.feedback[stg]) {
         const f = candidate.feedback[stg];
         if (stg === "On-site" && f.interviews) {
-          // multiple interviews
           html += `<div class="feedback-stage"><strong>${stg}:</strong> ${formatRating(f.rating)}<br/>
             <em>Notes:</em> ${f.notes || ""}</div>`;
-          // interviews
           f.interviews.forEach((intv, idx) => {
             html += `<div class="feedback-stage" style="margin-left:20px;">
               <strong>Interviewer #${idx + 1}:</strong> ${intv.name || ""}<br/>
