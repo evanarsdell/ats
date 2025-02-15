@@ -108,42 +108,342 @@ header {
 /* =========================
    JOBS VIEW (Home)
 ========================= */
-/* ... same as before ... */
+#jobsView {
+  margin-bottom: 30px;
+}
 
-/* =========================
-   ARCHIVED VIEWS
-========================= */
-/* ... same as before ... */
+#jobsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* Single job card */
+.job-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  width: 320px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  position: relative;
+}
+
+.job-card h4 {
+  margin-bottom: 6px;
+  font-size: 1.1rem;
+}
+
+.job-card p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.job-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 5px;
+}
+
+.job-actions button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.job-actions button:hover {
+  background-color: #0056b3;
+}
+
+/* The row containing "Add a New Job" and "Add a New Candidate" forms */
+.forms-row {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
 
 /* =========================
    FORM CONTAINERS
 ========================= */
-/* ... same as before ... */
+.form-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  width: 320px;
+}
+
+.form-container label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.form-container input,
+.form-container textarea,
+.form-container select {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.candidate-source-group label {
+  margin-right: 15px;
+  font-weight: normal;
+  font-size: 0.85rem;
+}
+
+.form-container button {
+  margin-top: 20px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.form-container button:hover {
+  background-color: #218838;
+}
 
 /* =========================
    BACK BUTTON
 ========================= */
-/* ... same as before ... */
+.back-btn {
+  margin-top: 20px;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.back-btn:hover {
+  background-color: #5a6268;
+}
 
 /* =========================
    JOB HEADER
 ========================= */
-/* ... same as before ... */
+.job-header {
+  background: #fff;
+  border-radius: 6px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.job-header h2 {
+  margin-bottom: 6px;
+  font-size: 1.3rem;
+}
+.job-subdetails {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 4px;
+}
 
 /* =========================
    STATS BAR
 ========================= */
-/* ... same as before ... */
+.stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.stat-item {
+  background: #fff;
+  border-radius: 4px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+}
+.stat-item span {
+  margin-left: 5px;
+  font-weight: bold;
+}
 
 /* =========================
    BOARD & COLUMNS
 ========================= */
-/* ... same as before ... */
+.board {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.column {
+  width: 220px;
+  min-height: 340px;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.column h2 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  text-align: center;
+  color: #333;
+}
+.column-content {
+  min-height: 240px;
+  border: 2px dashed #ccc;
+  padding: 10px;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+/* Shades of orange for each stage */
+.column[data-stage="Applied"] {
+  background-color: #FFE5CC;
+}
+.column[data-stage="Phone Screen"] {
+  background-color: #FFD1A1;
+}
+.column[data-stage="HM Screen"] {
+  background-color: #FFBD73;
+}
+.column[data-stage="On-site"] {
+  background-color: #FFA84D;
+}
+.column[data-stage="Offer"] {
+  background-color: #FF9426;
+}
+.column[data-stage="Hired"] {
+  background-color: #FF8000;
+}
 
 /* =========================
    CANDIDATE CARD
 ========================= */
-/* ... same as before ... */
+.candidate-card {
+  background-color: #fff;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: move;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: background 0.3s ease;
+  position: relative;
+}
+.candidate-card:hover {
+  background-color: #f7f7f7;
+}
+.candidate-name {
+  color: #007BFF;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.candidate-name:hover {
+  text-decoration: underline;
+}
+.candidate-position {
+  color: #28a745;
+  font-style: italic;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+}
+.candidate-email {
+  color: #dc3545;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+.candidate-notes {
+  color: #333;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+}
+.candidate-source {
+  color: #6f42c1;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+.candidate-feedback-summary {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #444;
+}
+.candidate-feedback-summary ul {
+  list-style: none;
+  margin-top: 4px;
+}
+.candidate-feedback-summary li {
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.candidate-feedback-summary li:hover {
+  text-decoration: underline;
+}
+/* Rating classes */
+.rating-strong_no {
+  color: darkred;
+  font-weight: bold;
+}
+.rating-no {
+  color: red;
+}
+.rating-yes {
+  color: green;
+}
+.rating-strong_yes {
+  color: darkgreen;
+  font-weight: bold;
+}
+.rating-none {
+  color: #999;
+}
+/* Card actions */
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 6px;
+}
+.card-actions button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.card-actions button:hover {
+  background-color: #0056b3;
+}
+
+/* Drag & Drop highlight */
+.column-content.drag-over {
+  background-color: #e0ffe0;
+  border-color: #28a745;
+}
 
 /* =========================
    MODALS
@@ -216,6 +516,7 @@ header {
 .modal-content form button:hover {
   background-color: #218838;
 }
+
 #onsiteInterviewersSection {
   background-color: #f9f9f9;
   border: 1px solid #ccc;
@@ -228,31 +529,6 @@ header {
   border: 1px solid #eee;
   padding: 6px;
   border-radius: 4px;
-}
-
-/* For the read-only container in the feedback modal */
-#feedbackReadOnlyContainer {
-  border: 1px solid #eee;
-  padding: 10px;
-  border-radius: 4px;
-  background-color: #fefefe;
-  margin-bottom: 10px;
-}
-#feedbackReadOnlyContent {
-  font-size: 0.9rem;
-  color: #333;
-}
-#feedbackEditBtn {
-  background-color: #ffc107;
-  color: #000;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-#feedbackEditBtn:hover {
-  background-color: #e0a800;
 }
 
 /* Candidate Detail Modal (larger) */
