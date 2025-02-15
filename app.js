@@ -36,7 +36,10 @@ let candidates = [
     sourceType: "applied",
     archived: false,
     history: [],
-    feedback: {}
+    feedback: {
+      // e.g. "Phone Screen": { rating, notes, readOnly },
+      // "On-site": { interviewers: [...], readOnly }
+    }
   },
   {
     id: 2,
@@ -64,13 +67,13 @@ let candidateToArchive = null;
 let jobToArchive = null;
 
 /************************************
- * DOM ELEMENTS
+ * DOM
  ************************************/
 // Header
 const homeBtn = document.getElementById("homeBtn");
+const pipelineAddCandidateBtn = document.getElementById("pipelineAddCandidateBtn");
 const dropdownBtn = document.getElementById("dropdownBtn");
 const dropdownContent = document.getElementById("dropdownContent");
-const toggleFormBtn = document.getElementById("toggleFormBtn");
 const searchBtn = document.getElementById("searchBtn");
 const searchContainer = document.getElementById("searchContainer");
 const searchInput = document.getElementById("searchInput");
@@ -104,7 +107,7 @@ const onsiteList = document.getElementById("onsiteList");
 const offerList = document.getElementById("offerList");
 const hiredList = document.getElementById("hiredList");
 
-// Pipeline candidate form
+// Pipeline add candidate
 const candidateFormContainer = document.getElementById("candidateFormContainer");
 const candidateForm = document.getElementById("candidateForm");
 const candidateName = document.getElementById("candidateName");
@@ -115,11 +118,48 @@ const candidateNotes = document.getElementById("candidateNotes");
 // Archived
 const archivedList = document.getElementById("archivedList");
 const archivedJobsList = document.getElementById("archivedJobsList");
+
+// Buttons
 const backToJobsBtn = document.getElementById("backToJobsBtn");
 const backToJobsFromArchiveCandidatesBtn = document.getElementById("backToJobsFromArchiveCandidatesBtn");
 const backToJobsFromArchiveJobsBtn = document.getElementById("backToJobsFromArchiveJobsBtn");
 
-// Edit Candidate Modal
+// Feedback Modal
+const feedbackCandidateModal = document.getElementById("feedbackCandidateModal");
+const closeFeedbackModal = document.getElementById("closeFeedbackModal");
+const feedbackCandidateForm = document.getElementById("feedbackCandidateForm");
+const feedbackCandidateId = document.getElementById("feedbackCandidateId");
+const feedbackStageValue = document.getElementById("feedbackStageValue");
+const feedbackRatingSelect = document.getElementById("feedbackRatingSelect");
+const feedbackNotes = document.getElementById("feedbackNotes");
+const onsiteInterviewersSection = document.getElementById("onsiteInterviewersSection");
+const addInterviewerBtn = document.getElementById("addInterviewerBtn");
+const onsiteInterviewersList = document.getElementById("onsiteInterviewersList");
+
+// Feedback read-only
+const feedbackReadOnlyContainer = document.getElementById("feedbackReadOnlyContainer");
+const feedbackReadOnlyContent = document.getElementById("feedbackReadOnlyContent");
+const feedbackEditBtn = document.getElementById("feedbackEditBtn");
+const nonOnsiteSection = document.getElementById("nonOnsiteSection");
+
+// Archive Candidate Confirm
+const archiveConfirmModal = document.getElementById("archiveConfirmModal");
+const closeArchiveModal = document.getElementById("closeArchiveModal");
+const archiveYesBtn = document.getElementById("archiveYesBtn");
+const archiveNoBtn = document.getElementById("archiveNoBtn");
+
+// Archive Job Confirm
+const archiveJobModal = document.getElementById("archiveJobModal");
+const closeArchiveJobModal = document.getElementById("closeArchiveJobModal");
+const archiveJobYesBtn = document.getElementById("archiveJobYesBtn");
+const archiveJobNoBtn = document.getElementById("archiveJobNoBtn");
+
+// Candidate Detail
+const viewCandidateModal = document.getElementById("viewCandidateModal");
+const closeCandidateDetailModal = document.getElementById("closeCandidateDetailModal");
+const candidateDetailContent = document.getElementById("candidateDetailContent");
+
+// Edit Candidate
 const editCandidateModal = document.getElementById("editCandidateModal");
 const closeCandidateModal = document.getElementById("closeCandidateModal");
 const editCandidateForm = document.getElementById("editCandidateForm");
@@ -129,7 +169,7 @@ const editCandidateEmail = document.getElementById("editCandidateEmail");
 const editCandidatePosition = document.getElementById("editCandidatePosition");
 const editCandidateNotes = document.getElementById("editCandidateNotes");
 
-// Edit Job Modal
+// Edit Job
 const editJobModal = document.getElementById("editJobModal");
 const closeJobModal = document.getElementById("closeJobModal");
 const editJobForm = document.getElementById("editJobForm");
@@ -140,46 +180,10 @@ const editJobLevel = document.getElementById("editJobLevel");
 const editJobCompRange = document.getElementById("editJobCompRange");
 const editJobNotes = document.getElementById("editJobNotes");
 
-// Transfer Candidate Modal
-const transferCandidateModal = document.getElementById("transferCandidateModal");
-const closeTransferModal = document.getElementById("closeTransferModal");
-const transferCandidateForm = document.getElementById("transferCandidateForm");
-const transferCandidateId = document.getElementById("transferCandidateId");
-const transferJobSelect = document.getElementById("transferJobSelect");
-
-// Feedback Modal
-const feedbackCandidateModal = document.getElementById("feedbackCandidateModal");
-const closeFeedbackModal = document.getElementById("closeFeedbackModal");
-const feedbackCandidateForm = document.getElementById("feedbackCandidateForm");
-const feedbackCandidateId = document.getElementById("feedbackCandidateId");
-const feedbackStageSelect = document.getElementById("feedbackStageSelect");
-const feedbackRatingSelect = document.getElementById("feedbackRatingSelect");
-const feedbackNotes = document.getElementById("feedbackNotes");
-const onsiteInterviewersSection = document.getElementById("onsiteInterviewersSection");
-const addInterviewerBtn = document.getElementById("addInterviewerBtn");
-const onsiteInterviewersList = document.getElementById("onsiteInterviewersList");
-
-// Archive Candidate Confirm Modal
-const archiveConfirmModal = document.getElementById("archiveConfirmModal");
-const closeArchiveModal = document.getElementById("closeArchiveModal");
-const archiveYesBtn = document.getElementById("archiveYesBtn");
-const archiveNoBtn = document.getElementById("archiveNoBtn");
-
-// Archive Job Confirm Modal
-const archiveJobModal = document.getElementById("archiveJobModal");
-const closeArchiveJobModal = document.getElementById("closeArchiveJobModal");
-const archiveJobYesBtn = document.getElementById("archiveJobYesBtn");
-const archiveJobNoBtn = document.getElementById("archiveJobNoBtn");
-
-// Candidate Detail Modal
-const viewCandidateModal = document.getElementById("viewCandidateModal");
-const closeCandidateDetailModal = document.getElementById("closeCandidateDetailModal");
-const candidateDetailContent = document.getElementById("candidateDetailContent");
-
 /************************************
  * EVENT LISTENERS
  ************************************/
-// Home Button
+// Home button
 homeBtn.addEventListener("click", () => {
   currentJobId = null;
   candidatesView.style.display = "none";
@@ -187,6 +191,13 @@ homeBtn.addEventListener("click", () => {
   archivedJobsView.style.display = "none";
   searchContainer.style.display = "none";
   renderJobs();
+});
+
+// Pipeline add candidate button
+pipelineAddCandidateBtn.addEventListener("click", () => {
+  if (!currentJobId) return;
+  candidateFormContainer.style.display =
+    candidateFormContainer.style.display === "none" ? "block" : "none";
 });
 
 // Dropdown
@@ -200,7 +211,7 @@ window.addEventListener("click", (e) => {
   }
 });
 
-// Show/hide search
+// Search
 searchBtn.addEventListener("click", () => {
   searchContainer.style.display =
     searchContainer.style.display === "none" ? "flex" : "none";
@@ -215,7 +226,7 @@ searchInput.addEventListener("input", () => {
   }
 });
 
-// View archived
+// Archived
 viewArchivedCandidatesBtn.addEventListener("click", () => {
   jobsView.style.display = "none";
   candidatesView.style.display = "none";
@@ -243,17 +254,10 @@ homeCandidateForm.addEventListener("submit", (e) => {
   addCandidateFromHome();
 });
 
-// Pipeline add candidate form
+// Pipeline candidate form
 candidateForm.addEventListener("submit", (e) => {
   e.preventDefault();
   addCandidateFromPipeline();
-});
-
-// Toggle pipeline candidate form
-toggleFormBtn.addEventListener("click", () => {
-  if (!currentJobId) return;
-  candidateFormContainer.style.display =
-    candidateFormContainer.style.display === "none" ? "block" : "none";
 });
 
 // Back from pipeline
@@ -301,7 +305,7 @@ closeCandidateDetailModal.addEventListener("click", () => {
   viewCandidateModal.classList.remove("show");
 });
 
-// Archive candidate confirm
+// Archive candidate
 archiveYesBtn.addEventListener("click", () => {
   if (!candidateToArchive) return;
   candidateToArchive.archived = true;
@@ -315,7 +319,7 @@ archiveNoBtn.addEventListener("click", () => {
   candidateToArchive = null;
 });
 
-// Archive job confirm
+// Archive job
 archiveJobYesBtn.addEventListener("click", () => {
   if (!jobToArchive) return;
   jobToArchive.archived = true;
@@ -375,7 +379,16 @@ addInterviewerBtn.addEventListener("click", () => {
   onsiteInterviewersList.appendChild(block);
 });
 
-// Drag & Drop pipeline columns
+// Additional read-only feedback "Edit" button
+feedbackEditBtn.addEventListener("click", () => {
+  // Switch from read-only to edit form
+  feedbackReadOnlyContainer.style.display = "none";
+  feedbackCandidateForm.style.display = "block";
+});
+
+/************************************
+ * DRAG & DROP columns
+ ************************************/
 document.querySelectorAll(".column-content").forEach((col) => {
   col.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -399,19 +412,18 @@ document.querySelectorAll(".column-content").forEach((col) => {
 });
 
 /************************************
- * INIT
+ * INITIAL RENDER
  ************************************/
 renderJobs();
 
 /************************************
- * HELPER: Populate home candidate form
+ * UTILS: populate candidate job dropdown
  ************************************/
 function populateHomeCandidateDropdown() {
   homeCandidateJobSelect.innerHTML = "";
-  // Only unarchived jobs
   jobs.forEach(job => {
     if (!job.archived) {
-      let opt = document.createElement("option");
+      const opt = document.createElement("option");
       opt.value = job.id;
       opt.textContent = job.title;
       homeCandidateJobSelect.appendChild(opt);
@@ -419,20 +431,16 @@ function populateHomeCandidateDropdown() {
   });
 }
 
-/************************************
- * HELPER: Populate pipeline candidate form
- ************************************/
 function populatePipelineCandidateDropdown() {
   candidateJobSelect.innerHTML = "";
   jobs.forEach(job => {
     if (!job.archived) {
-      let opt = document.createElement("option");
+      const opt = document.createElement("option");
       opt.value = job.id;
       opt.textContent = job.title;
       candidateJobSelect.appendChild(opt);
     }
   });
-  // If we have a current job, default to it
   if (currentJobId) {
     candidateJobSelect.value = currentJobId.toString();
   }
@@ -474,16 +482,17 @@ function renderJobs() {
   candidatesView.style.display = "none";
   archivedCandidatesView.style.display = "none";
   archivedJobsView.style.display = "none";
-  toggleFormBtn.style.display = "none";
+
+  // Hide pipelineAddCandidateBtn on home
+  pipelineAddCandidateBtn.style.display = "none";
 
   // Populate home candidate dropdown
   populateHomeCandidateDropdown();
 
   jobsList.innerHTML = "";
-  // Show only unarchived jobs
   const activeJobs = jobs.filter(j => !j.archived);
 
-  activeJobs.forEach((job) => {
+  activeJobs.forEach(job => {
     const card = document.createElement("div");
     card.classList.add("job-card");
     card.innerHTML = `
@@ -500,27 +509,25 @@ function renderJobs() {
     `;
     jobsList.appendChild(card);
 
-    // Buttons
     const viewBtn = card.querySelector(".view-pipeline-btn");
     const editBtn = card.querySelector(".edit-job-btn");
     const archiveBtn = card.querySelector(".archive-job-btn");
 
-    // View pipeline
     viewBtn.addEventListener("click", () => {
       currentJobId = job.id;
       jobsView.style.display = "none";
       archivedCandidatesView.style.display = "none";
       archivedJobsView.style.display = "none";
       candidatesView.style.display = "block";
+
+      // Show the pipelineAddCandidateBtn
+      pipelineAddCandidateBtn.style.display = "inline-block";
+
       candidateFormContainer.style.display = "none";
-      toggleFormBtn.style.display = "inline-block";
       renderPipeline();
     });
 
-    // Edit
     editBtn.addEventListener("click", () => openEditJobModal(job.id));
-
-    // Archive job
     archiveBtn.addEventListener("click", () => {
       jobToArchive = job;
       archiveJobModal.classList.add("show");
@@ -557,7 +564,9 @@ function renderPipeline() {
   const searchTerm = searchInput.value.toLowerCase();
 
   jobCandidates.forEach(candidate => {
-    if (!candidate.name.toLowerCase().includes(searchTerm)) return;
+    if (searchTerm && !candidate.name.toLowerCase().includes(searchTerm)) {
+      return;
+    }
 
     const card = document.createElement("div");
     card.className = "candidate-card";
@@ -597,8 +606,6 @@ function renderPipeline() {
     });
     transferBtn.addEventListener("click", () => openTransferModal(candidate.id));
     feedbackBtn.addEventListener("click", () => openFeedbackModal(candidate.id));
-
-    // Name => detail
     nameEl.addEventListener("click", () => openCandidateDetailModal(candidate.id));
 
     // Feedback lines clickable
@@ -612,7 +619,6 @@ function renderPipeline() {
       });
     }
 
-    // Place in correct column
     switch (candidate.stage) {
       case "Applied": appliedList.appendChild(card); break;
       case "Phone Screen": phoneScreenList.appendChild(card); break;
@@ -625,6 +631,9 @@ function renderPipeline() {
   });
 }
 
+/************************************
+ * STATS
+ ************************************/
 function renderStats() {
   statsBar.innerHTML = "";
   STAGES.forEach(stage => {
@@ -840,7 +849,6 @@ function openEditCandidateModal(candidateId) {
   editCandidatePosition.value = candidate.position;
   editCandidateNotes.value = candidate.notes;
 
-  // Source radio
   const sourceRadios = document.getElementsByName("editCandidateSource");
   sourceRadios.forEach(radio => {
     radio.checked = (radio.value === candidate.sourceType);
@@ -909,7 +917,6 @@ function openTransferModal(candidateId) {
 
   transferCandidateId.value = candidate.id;
 
-  // Populate job dropdown with unarchived jobs (excluding candidate's current job)
   transferJobSelect.innerHTML = "";
   jobs.forEach(job => {
     if (!job.archived && job.id !== candidate.jobId) {
@@ -940,89 +947,153 @@ function completeTransfer() {
 /************************************
  * FEEDBACK
  ************************************/
-feedbackStageSelect.addEventListener("change", showHideOnsiteInterviewers);
+feedbackStageSelect.addEventListener("change", handleStageChange);
+function handleStageChange() {
+  const stage = feedbackStageSelect.value;
+  if (stage === "On-site") {
+    // Hide the single rating/notes
+    nonOnsiteSection.style.display = "none";
+    onsiteInterviewersSection.style.display = "block";
+    onsiteInterviewersList.innerHTML = "";
+  } else {
+    // Show rating/notes
+    nonOnsiteSection.style.display = "block";
+    onsiteInterviewersSection.style.display = "none";
+    onsiteInterviewersList.innerHTML = "";
+  }
+}
 
+// Open feedback modal with read-only or form
 function openFeedbackModal(candidateId, stage = null) {
   const candidate = candidates.find(c => c.id === candidateId);
   if (!candidate) return;
 
   feedbackCandidateId.value = candidate.id;
+  if (!stage) {
+    // default to phone screen if none specified
+    stage = "Phone Screen";
+  }
+  feedbackStageValue.value = stage;
 
-  if (stage) {
-    feedbackStageSelect.value = stage;
-    if (candidate.feedback[stage]) {
-      const f = candidate.feedback[stage];
-      feedbackRatingSelect.value = f.rating || "no";
-      feedbackNotes.value = f.notes || "";
-      if (stage === "On-site") {
-        onsiteInterviewersList.innerHTML = "";
-        onsiteInterviewersSection.style.display = "block";
-        if (f.interviews && Array.isArray(f.interviews)) {
-          f.interviews.forEach(intv => {
-            const block = document.createElement("div");
-            block.classList.add("interviewer-block");
-            block.innerHTML = `
-              <label>Name</label>
-              <input type="text" class="interviewer-name" value="${intv.name || ""}" />
-              <label>Rating</label>
-              <select class="interviewer-rating">
-                <option value="strong_no">Strong No</option>
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-                <option value="strong_yes">Strong Yes</option>
-              </select>
-              <label>Notes</label>
-              <textarea class="interviewer-notes">${intv.notes || ""}</textarea>
-            `;
-            onsiteInterviewersList.appendChild(block);
-            const ratingSel = block.querySelector(".interviewer-rating");
-            if (ratingSel) ratingSel.value = intv.rating || "no";
-          });
-        }
-      } else {
-        onsiteInterviewersList.innerHTML = "";
-        onsiteInterviewersSection.style.display = "none";
-      }
-    } else {
-      // No existing feedback
-      feedbackRatingSelect.value = "no";
-      feedbackNotes.value = "";
-      onsiteInterviewersList.innerHTML = "";
-      onsiteInterviewersSection.style.display = (stage === "On-site") ? "block" : "none";
-    }
+  // Check if there's existing feedback for that stage
+  if (!candidate.feedback[stage]) {
+    // No feedback => show form
+    showFeedbackForm(stage);
   } else {
-    // default
-    feedbackStageSelect.value = "Phone Screen";
-    feedbackRatingSelect.value = "no";
-    feedbackNotes.value = "";
-    onsiteInterviewersList.innerHTML = "";
-    onsiteInterviewersSection.style.display = "none";
+    // There's existing feedback => if readOnly = true, show read-only, else form
+    const fb = candidate.feedback[stage];
+    if (fb.readOnly !== false) {
+      // show read-only
+      showFeedbackReadOnly(candidateId, stage);
+    } else {
+      // show form
+      populateFeedbackForm(candidateId, stage);
+      feedbackReadOnlyContainer.style.display = "none";
+      feedbackCandidateForm.style.display = "block";
+    }
   }
 
   feedbackCandidateModal.classList.add("show");
 }
 
-function showHideOnsiteInterviewers() {
-  if (feedbackStageSelect.value === "On-site") {
-    onsiteInterviewersSection.style.display = "block";
+// Show read-only content
+function showFeedbackReadOnly(candidateId, stage) {
+  feedbackReadOnlyContainer.style.display = "block";
+  feedbackCandidateForm.style.display = "none";
+
+  const candidate = candidates.find(c => c.id === candidateId);
+  const fb = candidate.feedback[stage];
+  let html = `<h4>${stage} Feedback</h4>`;
+
+  if (stage === "On-site") {
+    // multiple interviewers only
+    if (fb.interviewers && fb.interviewers.length > 0) {
+      fb.interviewers.forEach((intv, idx) => {
+        html += `
+          <div style="margin-bottom:8px; border:1px solid #eee; padding:6px; border-radius:4px;">
+            <strong>Interviewer #${idx + 1}</strong><br/>
+            Name: ${intv.name}<br/>
+            Rating: ${formatRating(intv.rating)}<br/>
+            Notes: ${intv.notes || ""}
+          </div>
+        `;
+      });
+    } else {
+      html += `<p>No interviewer feedback found.</p>`;
+    }
   } else {
-    onsiteInterviewersSection.style.display = "none";
-    onsiteInterviewersList.innerHTML = "";
+    // single rating/notes
+    html += `
+      <p><strong>Rating:</strong> ${formatRating(fb.rating || "no")}</p>
+      <p><strong>Notes:</strong> ${fb.notes || ""}</p>
+    `;
+  }
+
+  feedbackReadOnlyContent.innerHTML = html;
+}
+
+// Show the form for new or existing feedback
+function showFeedbackForm(stage) {
+  feedbackReadOnlyContainer.style.display = "none";
+  feedbackCandidateForm.style.display = "block";
+  feedbackStageSelect.value = stage;
+  handleStageChange(); // triggers the on-site logic
+  // Clear the form
+  feedbackRatingSelect.value = "no";
+  feedbackNotes.value = "";
+  onsiteInterviewersList.innerHTML = "";
+}
+
+// Populate the form from existing feedback
+function populateFeedbackForm(candidateId, stage) {
+  showFeedbackForm(stage); // sets up the form sections
+  const candidate = candidates.find(c => c.id === candidateId);
+  const fb = candidate.feedback[stage];
+
+  if (stage === "On-site") {
+    // Only interviewers
+    if (fb.interviewers && fb.interviewers.length > 0) {
+      fb.interviewers.forEach(intv => {
+        const block = document.createElement("div");
+        block.classList.add("interviewer-block");
+        block.innerHTML = `
+          <label>Name</label>
+          <input type="text" class="interviewer-name" value="${intv.name || ""}" />
+          <label>Rating</label>
+          <select class="interviewer-rating">
+            <option value="strong_no">Strong No</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+            <option value="strong_yes">Strong Yes</option>
+          </select>
+          <label>Notes</label>
+          <textarea class="interviewer-notes">${intv.notes || ""}</textarea>
+        `;
+        onsiteInterviewersList.appendChild(block);
+        const ratingSel = block.querySelector(".interviewer-rating");
+        ratingSel.value = intv.rating;
+      });
+    }
+  } else {
+    // single rating & notes
+    feedbackRatingSelect.value = fb.rating || "no";
+    feedbackNotes.value = fb.notes || "";
   }
 }
 
+// Save feedback => readOnly
 function saveFeedback() {
   const cId = Number(feedbackCandidateId.value);
   const candidate = candidates.find(c => c.id === cId);
   if (!candidate) return;
 
-  if (!candidate.feedback) candidate.feedback = {};
-
-  const stage = feedbackStageSelect.value;
-  const rating = feedbackRatingSelect.value;
-  const notesVal = feedbackNotes.value;
+  const stage = feedbackStageValue.value;
+  if (!candidate.feedback[stage]) {
+    candidate.feedback[stage] = { readOnly: true };
+  }
 
   if (stage === "On-site") {
+    // purely interviewer blocks
     const interviewBlocks = onsiteInterviewersList.querySelectorAll(".interviewer-block");
     const interviewsArr = [];
     interviewBlocks.forEach(block => {
@@ -1035,10 +1106,16 @@ function saveFeedback() {
         notes: notesEl.value
       });
     });
-    candidate.feedback[stage] = { rating, notes: notesVal, interviews: interviewsArr };
+    candidate.feedback[stage].interviewers = interviewsArr;
+    // no single rating or notes
   } else {
-    candidate.feedback[stage] = { rating, notes: notesVal };
+    // single rating & notes
+    candidate.feedback[stage].rating = feedbackRatingSelect.value;
+    candidate.feedback[stage].notes = feedbackNotes.value;
   }
+
+  // Mark as readOnly
+  candidate.feedback[stage].readOnly = true;
 
   recordCandidateHistory(candidate, "feedback", `Feedback saved for ${stage}`);
   feedbackCandidateModal.classList.remove("show");
@@ -1055,15 +1132,32 @@ function getFeedbackSummary(candidate) {
     <ul>`;
   stagesToShow.forEach(stg => {
     if (candidate.feedback[stg]) {
-      const f = candidate.feedback[stg];
-      const r = f.rating;
-      const ratingClass = `rating-${r}`;
-      html += `
-        <li data-stage="${stg}">
-          <strong>${stg}:</strong> 
-          <span class="${ratingClass}">${formatRating(r)}</span>
-        </li>
-      `;
+      // If On-site => no overall rating, just "On-site Feedback"
+      if (stg === "On-site") {
+        const arr = candidate.feedback[stg].interviewers;
+        if (arr && arr.length > 0) {
+          // maybe show # of interviewers or something
+          html += `<li data-stage="${stg}">
+            <strong>${stg}:</strong>
+            <span class="rating-none">(${arr.length} interviewers)</span>
+          </li>`;
+        } else {
+          html += `<li data-stage="${stg}">
+            <strong>${stg}:</strong>
+            <span class="rating-none">None</span>
+          </li>`;
+        }
+      } else {
+        // single rating
+        const r = candidate.feedback[stg].rating || "no";
+        const ratingClass = `rating-${r}`;
+        html += `
+          <li data-stage="${stg}">
+            <strong>${stg}:</strong> 
+            <span class="${ratingClass}">${formatRating(r)}</span>
+          </li>
+        `;
+      }
     } else {
       html += `
         <li data-stage="${stg}">
@@ -1088,7 +1182,7 @@ function formatRating(r) {
 }
 
 /************************************
- * HISTORY RECORDING
+ * HISTORY
  ************************************/
 function recordCandidateHistory(candidate, actionType, desc) {
   candidate.history.push({
@@ -1147,33 +1241,38 @@ function openCandidateDetailModal(candidateId) {
     <p><strong>Source:</strong> ${candidate.sourceType}</p>
   `;
 
-  // Feedback
+  // Show feedback for all pipeline stages
   html += `<h3>Feedback</h3>`;
   if (!candidate.feedback || Object.keys(candidate.feedback).length === 0) {
     html += `<p>No feedback yet.</p>`;
   } else {
     STAGES.forEach(stg => {
       if (candidate.feedback[stg]) {
-        const f = candidate.feedback[stg];
-        if (stg === "On-site" && f.interviews) {
-          html += `<div class="feedback-stage"><strong>${stg}:</strong> ${formatRating(f.rating)}<br/>
-            <em>Notes:</em> ${f.notes || ""}</div>`;
-          f.interviews.forEach((intv, idx) => {
-            html += `<div class="feedback-stage" style="margin-left:20px;">
-              <strong>Interviewer #${idx + 1}:</strong> ${intv.name || ""}<br/>
-              <strong>Rating:</strong> ${formatRating(intv.rating)}<br/>
-              <em>Notes:</em> ${intv.notes || ""}
-            </div>`;
-          });
+        const fb = candidate.feedback[stg];
+        if (stg === "On-site") {
+          // multiple interviewers only
+          html += `<div class="feedback-stage"><strong>${stg}:</strong></div>`;
+          if (fb.interviewers && fb.interviewers.length > 0) {
+            fb.interviewers.forEach((intv, idx) => {
+              html += `<div class="feedback-stage" style="margin-left:20px;">
+                <strong>Interviewer #${idx + 1}:</strong> ${intv.name}<br/>
+                <strong>Rating:</strong> ${formatRating(intv.rating)}<br/>
+                <em>Notes:</em> ${intv.notes || ""}
+              </div>`;
+            });
+          } else {
+            html += `<div style="margin-left:20px;">No interviewer feedback.</div>`;
+          }
         } else {
-          html += `<div class="feedback-stage"><strong>${stg}:</strong> ${formatRating(f.rating)}<br/>
-            <em>Notes:</em> ${f.notes || ""}</div>`;
+          // single rating + notes
+          html += `<div class="feedback-stage"><strong>${stg}:</strong> ${formatRating(fb.rating || "no")}<br/>
+            <em>Notes:</em> ${fb.notes || ""}</div>`;
         }
       }
     });
   }
 
-  // History
+  // Show history
   html += `<h3>History</h3>`;
   if (!candidate.history || candidate.history.length === 0) {
     html += `<p>No history recorded.</p>`;
