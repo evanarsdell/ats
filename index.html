@@ -10,14 +10,19 @@
   <!-- HEADER & MENU -->
   <header>
     <h1>Multi-Job ATS</h1>
-    <div class="dropdown">
-      <button id="dropdownBtn" class="dropdown-btn">Menu ▼</button>
-      <div id="dropdownContent" class="dropdown-content">
-        <!-- Hidden on home page; shown inside a pipeline -->
-        <button id="toggleFormBtn" style="display:none;">Add Candidate Form</button>
-        <button id="searchBtn">Search</button>
-        <button id="viewArchivedCandidatesBtn">View Archived Candidates</button>
-        <button id="viewArchivedJobsBtn">View Archived Jobs</button>
+    <div class="header-right">
+      <!-- Home Button -->
+      <button id="homeBtn" class="home-btn">Home</button>
+
+      <div class="dropdown">
+        <button id="dropdownBtn" class="dropdown-btn">Menu ▼</button>
+        <div id="dropdownContent" class="dropdown-content">
+          <!-- Toggled in pipeline only; hidden on home by default -->
+          <button id="toggleFormBtn" style="display:none;">Add Candidate Form</button>
+          <button id="searchBtn">Search</button>
+          <button id="viewArchivedCandidatesBtn">View Archived Candidates</button>
+          <button id="viewArchivedJobsBtn">View Archived Jobs</button>
+        </div>
       </div>
     </div>
   </header>
@@ -27,32 +32,72 @@
     <input type="text" id="searchInput" placeholder="Type a name to search..." />
   </div>
 
-  <!-- JOBS VIEW (Default) -->
+  <!-- JOBS VIEW (Default/Home) -->
   <section id="jobsView">
     <h2>Jobs</h2>
     <div id="jobsList" class="jobs-list"></div>
-    
-    <!-- Add Job Form -->
-    <div class="form-container" id="addJobFormContainer">
-      <h3>Add a New Job</h3>
-      <form id="addJobForm">
-        <label for="jobTitle">Job Title</label>
-        <input type="text" id="jobTitle" required />
-        
-        <label for="jobManager">Hiring Manager</label>
-        <input type="text" id="jobManager" required />
 
-        <label for="jobLevel">Level</label>
-        <input type="text" id="jobLevel" />
+    <!-- Two side-by-side forms -->
+    <div class="forms-row" style="display: flex; gap: 20px; margin-top: 30px;">
+      <!-- Add Job Form (left) -->
+      <div class="form-container" style="flex: 1;">
+        <h3>Add a New Job</h3>
+        <form id="addJobForm">
+          <label for="jobTitle">Job Title</label>
+          <input type="text" id="jobTitle" required />
+          
+          <label for="jobManager">Hiring Manager</label>
+          <input type="text" id="jobManager" required />
 
-        <label for="jobCompRange">Comp Range</label>
-        <input type="text" id="jobCompRange" />
+          <label for="jobLevel">Level</label>
+          <input type="text" id="jobLevel" />
 
-        <label for="jobNotes">Notes</label>
-        <textarea id="jobNotes"></textarea>
+          <label for="jobCompRange">Comp Range</label>
+          <input type="text" id="jobCompRange" />
 
-        <button type="submit">Add Job</button>
-      </form>
+          <label for="jobNotes">Notes</label>
+          <textarea id="jobNotes"></textarea>
+
+          <button type="submit">Add Job</button>
+        </form>
+      </div>
+
+      <!-- Add Candidate Form (right, home page) -->
+      <div class="form-container" style="flex: 1;">
+        <h3>Add a New Candidate</h3>
+        <form id="homeCandidateForm">
+          <label for="homeCandidateName">Full Name</label>
+          <input type="text" id="homeCandidateName" required />
+          
+          <label for="homeCandidateEmail">Email</label>
+          <input type="email" id="homeCandidateEmail" required />
+
+          <!-- Dropdown for picking the job (position) -->
+          <label for="homeCandidateJobSelect">Position (Job)</label>
+          <select id="homeCandidateJobSelect" required></select>
+
+          <label for="homeCandidateNotes">Notes</label>
+          <textarea id="homeCandidateNotes"></textarea>
+
+          <p><strong>Candidate Source:</strong></p>
+          <div class="candidate-source-group">
+            <label>
+              <input type="radio" name="homeCandidateSource" value="referral" />
+              Referral
+            </label>
+            <label>
+              <input type="radio" name="homeCandidateSource" value="applied" checked />
+              Applied
+            </label>
+            <label>
+              <input type="radio" name="homeCandidateSource" value="sourced" />
+              Sourced
+            </label>
+          </div>
+          
+          <button type="submit">Add Candidate</button>
+        </form>
+      </div>
     </div>
   </section>
 
@@ -92,7 +137,7 @@
       </div>
     </div>
 
-    <!-- Add Candidate Form -->
+    <!-- Pipeline Add Candidate Form (toggle via top menu) -->
     <div class="form-container" id="candidateFormContainer" style="display:none;">
       <h3>Add a New Candidate</h3>
       <form id="candidateForm">
@@ -101,9 +146,10 @@
         
         <label for="candidateEmail">Email</label>
         <input type="email" id="candidateEmail" required />
-        
-        <label for="candidatePosition">Position</label>
-        <input type="text" id="candidatePosition" required />
+
+        <!-- Job dropdown (defaults to current job) -->
+        <label for="candidateJobSelect">Position (Job)</label>
+        <select id="candidateJobSelect" required></select>
 
         <label for="candidateNotes">Notes</label>
         <textarea id="candidateNotes"></textarea>
@@ -145,7 +191,14 @@
     <button id="backToJobsFromArchiveJobsBtn" class="back-btn">← Back to Jobs</button>
   </section>
 
-  <!-- MODAL: Edit Candidate -->
+  <!-- ===============================
+       MODALS
+       (Candidate Detail, Archive, 
+        Transfer, Feedback, Edit Candidate, 
+        Edit Job, etc.)
+       =============================== -->
+
+  <!-- EDIT CANDIDATE MODAL -->
   <div id="editCandidateModal" class="modal">
     <div class="modal-content">
       <span id="closeCandidateModal" class="close">&times;</span>
@@ -186,7 +239,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Edit Job -->
+  <!-- EDIT JOB MODAL -->
   <div id="editJobModal" class="modal">
     <div class="modal-content">
       <span id="closeJobModal" class="close">&times;</span>
@@ -214,7 +267,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Transfer Candidate -->
+  <!-- TRANSFER CANDIDATE MODAL -->
   <div id="transferCandidateModal" class="modal">
     <div class="modal-content">
       <span id="closeTransferModal" class="close">&times;</span>
@@ -228,7 +281,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Interview Feedback -->
+  <!-- FEEDBACK MODAL -->
   <div id="feedbackCandidateModal" class="modal">
     <div class="modal-content">
       <span id="closeFeedbackModal" class="close">&times;</span>
@@ -252,7 +305,7 @@
           <option value="strong_yes">Strong Yes</option>
         </select>
 
-        <!-- If On-site is chosen, multiple interviewer feedback can be added -->
+        <!-- On-site can have multiple interviewers -->
         <div id="onsiteInterviewersSection" style="display:none;">
           <h4>Multiple Interviewers</h4>
           <button type="button" id="addInterviewerBtn">+ Add Interviewer</button>
@@ -267,7 +320,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Archive Confirmation for Candidates -->
+  <!-- ARCHIVE CANDIDATE CONFIRM MODAL -->
   <div id="archiveConfirmModal" class="modal">
     <div class="modal-content">
       <span id="closeArchiveModal" class="close">&times;</span>
@@ -280,7 +333,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Archive Confirmation for Jobs -->
+  <!-- ARCHIVE JOB CONFIRM MODAL -->
   <div id="archiveJobModal" class="modal">
     <div class="modal-content">
       <span id="closeArchiveJobModal" class="close">&times;</span>
@@ -293,7 +346,7 @@
     </div>
   </div>
 
-  <!-- MODAL: Candidate Detail (full feedback & history) -->
+  <!-- CANDIDATE DETAIL MODAL -->
   <div id="viewCandidateModal" class="modal">
     <div class="modal-content">
       <span id="closeCandidateDetailModal" class="close">&times;</span>
