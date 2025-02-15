@@ -197,9 +197,146 @@
     </div>
   </div>
 
-  <!-- FEEDBACK MODAL, etc. (unchanged for brevity) -->
+  <!-- FEEDBACK MODAL -->
+  <div id="feedbackCandidateModal" class="modal">
+    <div class="modal-content">
+      <span id="closeFeedbackModal" class="close">&times;</span>
+      <h2>Interview Feedback</h2>
+      <form id="feedbackCandidateForm">
+        <input type="hidden" id="feedbackCandidateId" />
 
-  <!-- Edit Candidate, Edit Job, Transfer, Archive, etc. modals go here -->
+        <label for="feedbackStageSelect">Stage</label>
+        <select id="feedbackStageSelect">
+          <option value="Phone Screen">Phone Screen</option>
+          <option value="HM Screen">HM Screen</option>
+          <option value="On-site">On-site</option>
+          <option value="Offer">Offer</option>
+        </select>
+
+        <label for="feedbackRatingSelect">Rating</label>
+        <select id="feedbackRatingSelect">
+          <option value="strong_no">Strong No</option>
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+          <option value="strong_yes">Strong Yes</option>
+        </select>
+
+        <label for="feedbackNotes">Notes</label>
+        <textarea id="feedbackNotes"></textarea>
+
+        <button type="submit">Save Feedback</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT CANDIDATE MODAL -->
+  <div id="editCandidateModal" class="modal">
+    <div class="modal-content">
+      <span id="closeCandidateModal" class="close">&times;</span>
+      <h2>Edit Candidate</h2>
+      <form id="editCandidateForm">
+        <input type="hidden" id="editCandidateId" />
+        
+        <label for="editCandidateName">Full Name</label>
+        <input type="text" id="editCandidateName" required />
+        
+        <label for="editCandidateEmail">Email</label>
+        <input type="email" id="editCandidateEmail" required />
+        
+        <label for="editCandidatePosition">Position</label>
+        <input type="text" id="editCandidatePosition" required />
+
+        <label for="editCandidateNotes">Notes</label>
+        <textarea id="editCandidateNotes"></textarea>
+
+        <p><strong>Candidate Source:</strong></p>
+        <div class="candidate-source-group">
+          <label>
+            <input type="radio" name="editCandidateSource" value="referral" />
+            Referral
+          </label>
+          <label>
+            <input type="radio" name="editCandidateSource" value="applied" />
+            Applied
+          </label>
+          <label>
+            <input type="radio" name="editCandidateSource" value="sourced" />
+            Sourced
+          </label>
+        </div>
+        
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDIT JOB MODAL -->
+  <div id="editJobModal" class="modal">
+    <div class="modal-content">
+      <span id="closeJobModal" class="close">&times;</span>
+      <h2>Edit Job</h2>
+      <form id="editJobForm">
+        <input type="hidden" id="editJobId" />
+        
+        <label for="editJobTitle">Job Title</label>
+        <input type="text" id="editJobTitle" required />
+        
+        <label for="editJobManager">Hiring Manager</label>
+        <input type="text" id="editJobManager" required />
+
+        <label for="editJobLevel">Level</label>
+        <input type="text" id="editJobLevel" />
+
+        <label for="editJobCompRange">Comp Range</label>
+        <input type="text" id="editJobCompRange" />
+
+        <label for="editJobNotes">Notes</label>
+        <textarea id="editJobNotes"></textarea>
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TRANSFER CANDIDATE MODAL -->
+  <div id="transferCandidateModal" class="modal">
+    <div class="modal-content">
+      <span id="closeTransferModal" class="close">&times;</span>
+      <h2>Transfer Candidate</h2>
+      <form id="transferCandidateForm">
+        <input type="hidden" id="transferCandidateId" />
+        <label for="transferJobSelect">Select Job</label>
+        <select id="transferJobSelect"></select>
+        <button type="submit">Transfer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ARCHIVE CANDIDATE CONFIRM MODAL -->
+  <div id="archiveConfirmModal" class="modal">
+    <div class="modal-content">
+      <span id="closeArchiveModal" class="close">&times;</span>
+      <h2>Archive Candidate</h2>
+      <p>Are you sure you want to archive this candidate?</p>
+      <div class="card-actions" style="justify-content: flex-end;">
+        <button id="archiveYesBtn">Yes, Archive</button>
+        <button id="archiveNoBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHIVE JOB CONFIRM MODAL -->
+  <div id="archiveJobModal" class="modal">
+    <div class="modal-content">
+      <span id="closeArchiveJobModal" class="close">&times;</span>
+      <h2>Archive Job</h2>
+      <p>Are you sure you want to archive this job?</p>
+      <div class="card-actions" style="justify-content: flex-end;">
+        <button id="archiveJobYesBtn">Yes, Archive</button>
+        <button id="archiveJobNoBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>
