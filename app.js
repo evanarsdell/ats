@@ -56,7 +56,7 @@ let candidates = [
 // Pipeline stages
 const STAGES = ["Applied", "Phone Screen", "HM Screen", "On-site", "Offer", "Hired"];
 
-// Track which job's pipeline is open
+// Keep track of which job pipeline is open
 let currentJobId = null;
 
 // For archiving
@@ -64,7 +64,7 @@ let candidateToArchive = null;
 let jobToArchive = null;
 
 /************************************
- * DOM
+ * DOM ELEMENTS
  ************************************/
 // Header
 const homeBtn = document.getElementById("homeBtn");
@@ -126,7 +126,54 @@ const viewCandidateModal = document.getElementById("viewCandidateModal");
 const closeCandidateDetailModal = document.getElementById("closeCandidateDetailModal");
 const candidateDetailContent = document.getElementById("candidateDetailContent");
 
-// (If you have feedback modals, edit candidate/job modals, etc., references go here...)
+// FEEDBACK MODAL
+const feedbackCandidateModal = document.getElementById("feedbackCandidateModal");
+const closeFeedbackModal = document.getElementById("closeFeedbackModal");
+const feedbackCandidateForm = document.getElementById("feedbackCandidateForm");
+const feedbackCandidateId = document.getElementById("feedbackCandidateId");
+const feedbackStageSelect = document.getElementById("feedbackStageSelect");
+const feedbackRatingSelect = document.getElementById("feedbackRatingSelect");
+const feedbackNotes = document.getElementById("feedbackNotes");
+
+// EDIT CANDIDATE MODAL
+const editCandidateModal = document.getElementById("editCandidateModal");
+const closeCandidateModal = document.getElementById("closeCandidateModal");
+const editCandidateForm = document.getElementById("editCandidateForm");
+const editCandidateId = document.getElementById("editCandidateId");
+const editCandidateName = document.getElementById("editCandidateName");
+const editCandidateEmail = document.getElementById("editCandidateEmail");
+const editCandidatePosition = document.getElementById("editCandidatePosition");
+const editCandidateNotes = document.getElementById("editCandidateNotes");
+
+// EDIT JOB MODAL
+const editJobModal = document.getElementById("editJobModal");
+const closeJobModal = document.getElementById("closeJobModal");
+const editJobForm = document.getElementById("editJobForm");
+const editJobId = document.getElementById("editJobId");
+const editJobTitle = document.getElementById("editJobTitle");
+const editJobManager = document.getElementById("editJobManager");
+const editJobLevel = document.getElementById("editJobLevel");
+const editJobCompRange = document.getElementById("editJobCompRange");
+const editJobNotes = document.getElementById("editJobNotes");
+
+// TRANSFER CANDIDATE MODAL
+const transferCandidateModal = document.getElementById("transferCandidateModal");
+const closeTransferModal = document.getElementById("closeTransferModal");
+const transferCandidateForm = document.getElementById("transferCandidateForm");
+const transferCandidateId = document.getElementById("transferCandidateId");
+const transferJobSelect = document.getElementById("transferJobSelect");
+
+// ARCHIVE CANDIDATE CONFIRM
+const archiveConfirmModal = document.getElementById("archiveConfirmModal");
+const closeArchiveModal = document.getElementById("closeArchiveModal");
+const archiveYesBtn = document.getElementById("archiveYesBtn");
+const archiveNoBtn = document.getElementById("archiveNoBtn");
+
+// ARCHIVE JOB CONFIRM
+const archiveJobModal = document.getElementById("archiveJobModal");
+const closeArchiveJobModal = document.getElementById("closeArchiveJobModal");
+const archiveJobYesBtn = document.getElementById("archiveJobYesBtn");
+const archiveJobNoBtn = document.getElementById("archiveJobNoBtn");
 
 /************************************
  * EVENT LISTENERS
@@ -174,7 +221,7 @@ searchInput.addEventListener("input", () => {
   }
 });
 
-// Archived
+// View archived
 viewArchivedCandidatesBtn.addEventListener("click", () => {
   jobsView.style.display = "none";
   candidatesView.style.display = "none";
@@ -228,6 +275,81 @@ backToJobsFromArchiveJobsBtn.addEventListener("click", () => {
   renderJobs();
 });
 
+// Close modals
+closeCandidateDetailModal.addEventListener("click", () => {
+  viewCandidateModal.classList.remove("show");
+});
+closeFeedbackModal.addEventListener("click", () => {
+  feedbackCandidateModal.classList.remove("show");
+});
+closeCandidateModal.addEventListener("click", () => {
+  editCandidateModal.classList.remove("show");
+});
+closeJobModal.addEventListener("click", () => {
+  editJobModal.classList.remove("show");
+});
+closeTransferModal.addEventListener("click", () => {
+  transferCandidateModal.classList.remove("show");
+});
+closeArchiveModal.addEventListener("click", () => {
+  archiveConfirmModal.classList.remove("show");
+  candidateToArchive = null;
+});
+closeArchiveJobModal.addEventListener("click", () => {
+  archiveJobModal.classList.remove("show");
+  jobToArchive = null;
+});
+
+// Archive confirm
+archiveYesBtn.addEventListener("click", () => {
+  if (!candidateToArchive) return;
+  candidateToArchive.archived = true;
+  archiveConfirmModal.classList.remove("show");
+  candidateToArchive = null;
+  renderPipeline();
+});
+archiveNoBtn.addEventListener("click", () => {
+  archiveConfirmModal.classList.remove("show");
+  candidateToArchive = null;
+});
+
+// Archive job confirm
+archiveJobYesBtn.addEventListener("click", () => {
+  if (!jobToArchive) return;
+  jobToArchive.archived = true;
+  archiveJobModal.classList.remove("show");
+  jobToArchive = null;
+  renderJobs();
+});
+archiveJobNoBtn.addEventListener("click", () => {
+  archiveJobModal.classList.remove("show");
+  jobToArchive = null;
+});
+
+// Feedback form
+feedbackCandidateForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  saveFeedback();
+});
+
+// Edit Candidate form
+editCandidateForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  saveCandidateEdits();
+});
+
+// Edit Job form
+editJobForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  saveJobEdits();
+});
+
+// Transfer Candidate form
+transferCandidateForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  completeTransfer();
+});
+
 // DRAG & DROP columns
 document.querySelectorAll(".column-content").forEach((col) => {
   col.addEventListener("dragover", (e) => {
@@ -244,9 +366,7 @@ document.querySelectorAll(".column-content").forEach((col) => {
     const found = candidates.find((c) => c.id.toString() === candidateId);
     if (found) {
       const newStage = col.parentNode.getAttribute("data-stage");
-      // Move candidate
       found.stage = newStage;
-      // Optionally record history, etc.
       renderPipeline();
     }
   });
@@ -255,10 +375,11 @@ document.querySelectorAll(".column-content").forEach((col) => {
 /************************************
  * INITIAL RENDER
  ************************************/
+// Immediately show the home page with example data
 renderJobs();
 
 /************************************
- * UTILS
+ * UTILS: Populate candidate job dropdown
  ************************************/
 function populateHomeCandidateDropdown() {
   homeCandidateJobSelect.innerHTML = "";
@@ -373,7 +494,7 @@ function renderJobs() {
       e.preventDefault();
       e.stopPropagation();
       jobToArchive = job;
-      // show archive job modal...
+      archiveJobModal.classList.add("show");
     });
   });
 }
@@ -400,7 +521,7 @@ function renderPipeline() {
   offerList.innerHTML = "";
   hiredList.innerHTML = "";
 
-  // Could do stats...
+  renderStats();
   populatePipelineCandidateDropdown();
 
   const jobCandidates = candidates.filter(c => c.jobId === currentJobId && !c.archived);
@@ -431,7 +552,7 @@ function renderPipeline() {
       </div>
     `;
 
-    // DRAG events on the entire card
+    // DRAG events
     card.addEventListener("dragstart", handleDragStart);
     card.addEventListener("dragend", handleDragEnd);
 
@@ -442,7 +563,7 @@ function renderPipeline() {
     const feedbackBtn = card.querySelector(".feedback-btn");
     const nameEl = card.querySelector(".candidate-name");
 
-    // **Key fix**: e.preventDefault & e.stopPropagation
+    // Stop propagation so they don't trigger drag
     editBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -452,7 +573,7 @@ function renderPipeline() {
       e.preventDefault();
       e.stopPropagation();
       candidateToArchive = candidate;
-      // show archiveConfirmModal...
+      archiveConfirmModal.classList.add("show");
     });
     transferBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -462,9 +583,10 @@ function renderPipeline() {
     feedbackBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      // open feedback modal...
+      openFeedbackModal(candidate.id);
     });
 
+    // Candidate name => detail
     nameEl.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -481,6 +603,20 @@ function renderPipeline() {
       case "Hired": hiredList.appendChild(card); break;
       default: appliedList.appendChild(card); break;
     }
+  });
+}
+
+/************************************
+ * STATS
+ ************************************/
+function renderStats() {
+  statsBar.innerHTML = "";
+  STAGES.forEach(stage => {
+    const count = candidates.filter(c => c.jobId === currentJobId && !c.archived && c.stage === stage).length;
+    const statItem = document.createElement("div");
+    statItem.classList.add("stat-item");
+    statItem.innerHTML = `${stage}: <span>${count}</span>`;
+    statsBar.appendChild(statItem);
   });
 }
 
@@ -561,7 +697,29 @@ function renderArchivedCandidates() {
     archivedList.innerHTML = `<p>No archived candidates found.</p>`;
     return;
   }
-  // ... same logic to display archived candidates ...
+
+  archCands.forEach(c => {
+    const card = document.createElement("div");
+    card.classList.add("archived-card");
+    const job = jobs.find(j => j.id === c.jobId);
+    const jobTitle = job ? job.title : "Unknown Job";
+
+    card.innerHTML = `
+      <h4>${c.name} (${c.position})</h4>
+      <p><strong>Last Job:</strong> ${jobTitle}</p>
+      <p><strong>Stage:</strong> ${c.stage}</p>
+      <p><strong>Email:</strong> ${c.email}</p>
+      <p><strong>Notes:</strong> ${c.notes}</p>
+      <div class="card-actions" style="margin-top:10px;">
+        <button class="unarchive-btn">Unarchive</button>
+      </div>
+      <hr/>
+      <p><strong>History:</strong></p>
+    `;
+
+    // If you want to show candidate history, do so here...
+    archivedList.appendChild(card);
+  });
 }
 
 /************************************
@@ -576,44 +734,205 @@ function renderArchivedJobs() {
     archivedJobsList.innerHTML = `<p>No archived jobs found.</p>`;
     return;
   }
-  // ... same logic to display archived jobs ...
+
+  archJobs.forEach(jb => {
+    const card = document.createElement("div");
+    card.classList.add("archived-card");
+    card.innerHTML = `
+      <h4>${jb.title}</h4>
+      <p><strong>Manager:</strong> ${jb.manager}</p>
+      <p><strong>Level:</strong> ${jb.level || ""}</p>
+      <p><strong>Comp Range:</strong> ${jb.compRange || ""}</p>
+      <p><strong>Notes:</strong> ${jb.notes || ""}</p>
+      <div class="card-actions" style="margin-top:10px;">
+        <button class="unarchive-job-btn">Unarchive</button>
+      </div>
+      <hr/>
+      <p><strong>History:</strong></p>
+    `;
+    archivedJobsList.appendChild(card);
+  });
+}
+
+/************************************
+ * FEEDBACK
+ ************************************/
+function openFeedbackModal(candidateId) {
+  const candidate = candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  feedbackCandidateId.value = candidate.id;
+  // If there's existing feedback logic, you can pre-fill stage, rating, notes
+  feedbackCandidateModal.classList.add("show");
+}
+
+function saveFeedback() {
+  const cId = Number(feedbackCandidateId.value);
+  const candidate = candidates.find(c => c.id === cId);
+  if (!candidate) return;
+
+  const stage = feedbackStageSelect.value;
+  const rating = feedbackRatingSelect.value;
+  const notesVal = feedbackNotes.value;
+
+  candidate.feedback[stage] = {
+    rating,
+    notes: notesVal
+  };
+
+  feedbackCandidateModal.classList.remove("show");
+  // Re-render pipeline to show feedback summary if you want
+  if (currentJobId) renderPipeline();
 }
 
 /************************************
  * EDIT CANDIDATE
  ************************************/
 function openEditCandidateModal(candidateId) {
-  // ...
+  const candidate = candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  editCandidateId.value = candidate.id;
+  editCandidateName.value = candidate.name;
+  editCandidateEmail.value = candidate.email;
+  editCandidatePosition.value = candidate.position;
+  editCandidateNotes.value = candidate.notes;
+
+  const sourceRadios = document.getElementsByName("editCandidateSource");
+  sourceRadios.forEach(r => {
+    r.checked = (r.value === candidate.sourceType);
+  });
+
+  editCandidateModal.classList.add("show");
 }
+
 function saveCandidateEdits() {
-  // ...
+  const id = Number(editCandidateId.value);
+  const candidate = candidates.find(c => c.id === id);
+  if (!candidate) return;
+
+  candidate.name = editCandidateName.value;
+  candidate.email = editCandidateEmail.value;
+  candidate.position = editCandidatePosition.value;
+  candidate.notes = editCandidateNotes.value;
+
+  const src = document.querySelector('input[name="editCandidateSource"]:checked');
+  candidate.sourceType = src ? src.value : "applied";
+
+  editCandidateModal.classList.remove("show");
+  if (currentJobId) renderPipeline();
 }
 
 /************************************
  * EDIT JOB
  ************************************/
 function openEditJobModal(jobId) {
-  // ...
+  const job = jobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  editJobId.value = job.id;
+  editJobTitle.value = job.title;
+  editJobManager.value = job.manager;
+  editJobLevel.value = job.level;
+  editJobCompRange.value = job.compRange;
+  editJobNotes.value = job.notes;
+
+  editJobModal.classList.add("show");
 }
+
 function saveJobEdits() {
-  // ...
+  const id = Number(editJobId.value);
+  const job = jobs.find(j => j.id === id);
+  if (!job) return;
+
+  job.title = editJobTitle.value;
+  job.manager = editJobManager.value;
+  job.level = editJobLevel.value;
+  job.compRange = editJobCompRange.value;
+  job.notes = editJobNotes.value;
+
+  editJobModal.classList.remove("show");
+  renderJobs();
 }
 
 /************************************
  * TRANSFER
  ************************************/
 function openTransferModal(candidateId) {
-  // ...
+  const candidate = candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  transferCandidateId.value = candidate.id;
+
+  // Populate job dropdown
+  transferJobSelect.innerHTML = "";
+  jobs.forEach(job => {
+    if (!job.archived && job.id !== candidate.jobId) {
+      const opt = document.createElement("option");
+      opt.value = job.id;
+      opt.textContent = job.title;
+      transferJobSelect.appendChild(opt);
+    }
+  });
+
+  transferCandidateModal.classList.add("show");
 }
+
 function completeTransfer() {
-  // ...
+  const cId = Number(transferCandidateId.value);
+  const candidate = candidates.find(c => c.id === cId);
+  if (!candidate) return;
+
+  const newJobId = Number(transferJobSelect.value);
+  candidate.jobId = newJobId;
+  candidate.stage = "Applied"; // reset stage
+  transferCandidateModal.classList.remove("show");
+  if (currentJobId) renderPipeline();
 }
 
 /************************************
  * CANDIDATE DETAIL MODAL
  ************************************/
 function openCandidateDetailModal(candidateId) {
-  // ...
+  const candidate = candidates.find(c => c.id === candidateId);
+  if (!candidate) return;
+
+  const job = jobs.find(j => j.id === candidate.jobId);
+  const jobTitle = job ? job.title : "Unknown";
+
+  let html = `
+    <h3>Basic Info</h3>
+    <p><strong>Name:</strong> ${candidate.name}</p>
+    <p><strong>Email:</strong> ${candidate.email}</p>
+    <p><strong>Position:</strong> ${candidate.position}</p>
+    <p><strong>Job:</strong> ${jobTitle}</p>
+    <p><strong>Stage:</strong> ${candidate.stage}</p>
+    <p><strong>Archived:</strong> ${candidate.archived ? "Yes" : "No"}</p>
+    <p><strong>Notes:</strong> ${candidate.notes}</p>
+    <p><strong>Source:</strong> ${candidate.sourceType}</p>
+  `;
+
+  // Show feedback
+  html += `<h3>Feedback</h3>`;
+  if (!candidate.feedback || Object.keys(candidate.feedback).length === 0) {
+    html += `<p>No feedback yet.</p>`;
+  } else {
+    Object.keys(candidate.feedback).forEach(stg => {
+      const f = candidate.feedback[stg];
+      html += `
+        <div class="feedback-stage">
+          <strong>${stg}:</strong> ${formatRating(f.rating || "no")}<br/>
+          <em>Notes:</em> ${f.notes || ""}
+        </div>
+      `;
+    });
+  }
+
+  // Show minimal "history" if you track it
+  // e.g. candidate.history for stage changes, etc.
+
+  candidateDetailContent.innerHTML = html;
+  viewCandidateModal.classList.add("show");
 }
 
 /************************************
@@ -634,4 +953,28 @@ function handleDragEnd(e) {
       draggedCard = null;
     }
   }, 0);
+}
+
+/************************************
+ * UTILS
+ ************************************/
+function formatRating(r) {
+  switch (r) {
+    case "strong_no": return "Strong No";
+    case "no": return "No";
+    case "yes": return "Yes";
+    case "strong_yes": return "Strong Yes";
+    default: return r;
+  }
+}
+
+function renderArchivedCandidates() {
+  // ...
+}
+function renderArchivedJobs() {
+  // ...
+}
+function renderStats() {
+  // ...
+  // or do a stats bar
 }
