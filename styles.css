@@ -146,7 +146,7 @@ header {
   background-color: #0056b3;
 }
 
-/* Two side-by-side forms on home */
+/* The row containing "Add a New Job" and "Add a New Candidate" forms */
 .forms-row {
   display: flex;
   gap: 40px;
@@ -407,6 +407,7 @@ header {
 .card-actions button:hover {
   background-color: #0056b3;
 }
+
 /* Drag & Drop highlight */
 .column-content.drag-over {
   background-color: #e0ffe0;
@@ -483,7 +484,7 @@ header {
   background-color: #218838;
 }
 
-/* Larger detail modal */
+/* Larger candidate detail modal */
 #viewCandidateModal .modal-content {
   width: 600px;
   max-width: 90%;
@@ -503,6 +504,15 @@ header {
   margin: 4px 0;
   background-color: #f8f9fa;
   padding: 6px;
+  border-radius: 4px;
+}
+
+/* For On-site multiple interviewer blocks */
+.interviewer-block {
+  margin-bottom: 10px;
+  background: #fff;
+  border: 1px solid #eee;
+  padding: 8px;
   border-radius: 4px;
 }
 
