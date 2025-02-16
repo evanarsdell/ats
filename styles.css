@@ -116,14 +116,12 @@ header {
 #jobsView {
   margin-bottom: 30px;
 }
-
 #jobsList {
   display: flex;
   flex-direction: column;
   gap: 14px;
   margin-bottom: 24px;
 }
-
 .job-card {
   background: #fff;
   border-radius: 8px;
@@ -137,7 +135,6 @@ header {
   transform: translateY(-2px);
   box-shadow: 0 6px 10px rgba(0,0,0,0.1);
 }
-
 .job-card h4 {
   margin-bottom: 6px;
   font-size: 1.15rem;
@@ -148,7 +145,6 @@ header {
   font-size: 0.9rem;
   color: #4b5563;
 }
-
 .job-actions {
   margin-top: 10px;
   display: flex;
@@ -165,7 +161,7 @@ header {
   background-color: #2563eb;
 }
 
-/* Two side-by-side forms on home */
+/* The row containing "Add a New Job" and "Add a New Candidate" forms */
 .forms-row {
   display: flex;
   gap: 40px;
@@ -196,21 +192,88 @@ header {
   color: #374151;
 }
 .form-container input,
-.form-container textarea,
-.form-container select {
+.form-container textarea {
   width: 100%;
   padding: 8px;
   font-size: 0.9rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  transition: border-color 0.2s ease;
 }
-.candidate-source-group label {
-  margin-right: 15px;
-  font-weight: normal;
-  font-size: 0.85rem;
-  color: #374151;
+.form-container input:focus,
+.form-container textarea:focus {
+  border-color: #3b82f6;
 }
 
+/* Custom SELECT styling */
+.form-container select {
+  width: 100%;
+  padding: 8px 34px 8px 8px;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  background-image: url("data:image/svg+xml,%3Csvg fill='%233b82f6' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1em;
+  appearance: none;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+}
+.form-container select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+.form-container select::-ms-expand {
+  display: none;
+}
+
+/* Radio button group with highlight */
+.candidate-source-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+/* Hide the native radio input */
+.candidate-source-group input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+/* The label for each radio option - default style */
+.candidate-source-group .source-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9fafb;
+  color: #374151;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+  position: relative;
+}
+.candidate-source-group .source-label:hover {
+  background-color: #f3f4f6;
+}
+/* When the radio is checked, highlight that label in blue with white text */
+#homeSourceReferral:checked + .source-label,
+#homeSourceApplied:checked + .source-label,
+#homeSourceSourced:checked + .source-label,
+#candSourceReferral:checked + .source-label,
+#candSourceApplied:checked + .source-label,
+#candSourceSourced:checked + .source-label,
+#editCandReferral:checked + .source-label,
+#editCandApplied:checked + .source-label,
+#editCandSourced:checked + .source-label {
+  background-color: #3b82f6;
+  color: #fff;
+  outline: none;
+}
+
+/* The main "Add" or "Save" button in the form container */
 .form-container button {
   margin-top: 20px;
   padding: 10px 16px;
@@ -248,15 +311,45 @@ header {
   margin-bottom: 20px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
+/* Make job title bolder */
 .job-header h2 {
-  margin-bottom: 6px;
-  font-size: 1.3rem;
+  margin-bottom: 10px;
+  font-size: 1.5rem;
   color: #1f2937;
+  font-weight: 700;
 }
+/* Subtle pastel color-coded details */
 .job-subdetails {
   font-size: 0.85rem;
-  color: #6b7280;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+}
+.job-subdetails:nth-of-type(1) {
+  background-color: #ecfdf5; /* pastel green */
+  color: #065f46;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.job-subdetails:nth-of-type(2) {
+  background-color: #fef9c3; /* pastel yellow */
+  color: #92400e;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.job-subdetails:nth-of-type(3) {
+  background-color: #fef2f2; /* pastel red/pink */
+  color: #991b1b;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.job-subdetails:nth-of-type(4) {
+  background-color: #eef2ff; /* pastel purple */
+  color: #4338ca;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
 }
 
 /* =========================
@@ -412,6 +505,53 @@ header {
 }
 
 /* =========================
+   FEEDBACK SUMMARY
+========================= */
+.feedback-summary {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: #555;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  padding: 6px;
+  position: relative;
+}
+.stage-line {
+  margin-top: 4px;
+}
+.expand-feedback {
+  display: inline-block;
+  margin-left: 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  cursor: pointer;
+}
+.expand-feedback:hover {
+  background-color: #2563eb;
+  text-decoration: none;
+}
+.feedback-detail {
+  display: none;
+  background-color: #fff;
+  margin-top: 4px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+}
+.feedback-detail p {
+  margin: 4px 0;
+  font-size: 0.75rem;
+  color: #333;
+}
+.rating-yes { color: #10b981; font-weight: 600; }
+.rating-no { color: #ef4444; font-weight: 600; }
+.rating-strong_yes { color: #065f46; font-weight: 700; }
+.rating-strong_no { color: #991b1b; font-weight: 700; }
+
+/* =========================
    MODALS
 ========================= */
 .modal {
@@ -470,6 +610,11 @@ header {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+.modal-content form input:focus,
+.modal-content form textarea:focus,
+.modal-content form select:focus {
+  border-color: #3b82f6;
+}
 .modal-content form button {
   margin-top: 10px;
   padding: 10px 14px;
@@ -491,6 +636,11 @@ header {
   font-size: 0.85rem;
   line-height: 1.4;
   color: #374151;
+}
+#candidateDetailContent p strong {
+  color: #3b82f6;
+  font-weight: 600;
+  margin-right: 4px;
 }
 #candidateDetailContent h3 {
   margin-top: 10px;
@@ -521,6 +671,46 @@ header {
   color: #374151;
   margin-top: 6px;
   display: block;
+}
+
+/* =========================
+   ARCHIVED LISTS
+========================= */
+.archived-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  width: 340px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  margin-bottom: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.archived-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+}
+.archived-card h4 {
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+  color: #1f2937;
+}
+.archived-card p {
+  margin: 3px 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+.archived-card button.unarchive-candidate-btn,
+.archived-card button.unarchive-job-btn {
+  background-color: #3b82f6;
+  color: #fff;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  margin-top: 10px;
+}
+.archived-card button.unarchive-candidate-btn:hover,
+.archived-card button.unarchive-job-btn:hover {
+  background-color: #2563eb;
 }
 
 /* UTILS */
