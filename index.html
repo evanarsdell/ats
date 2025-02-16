@@ -82,16 +82,37 @@
 
           <p><strong>Candidate Source:</strong></p>
           <div class="candidate-source-group">
-            <label>
-              <input type="radio" name="homeCandidateSource" value="referral" />
+            <!-- Referral -->
+            <input
+              type="radio"
+              id="homeSourceReferral"
+              name="homeCandidateSource"
+              value="referral"
+            />
+            <label for="homeSourceReferral" class="source-label">
               Referral
             </label>
-            <label>
-              <input type="radio" name="homeCandidateSource" value="applied" checked />
+
+            <!-- Applied -->
+            <input
+              type="radio"
+              id="homeSourceApplied"
+              name="homeCandidateSource"
+              value="applied"
+              checked
+            />
+            <label for="homeSourceApplied" class="source-label">
               Applied
             </label>
-            <label>
-              <input type="radio" name="homeCandidateSource" value="sourced" />
+
+            <!-- Sourced -->
+            <input
+              type="radio"
+              id="homeSourceSourced"
+              name="homeCandidateSource"
+              value="sourced"
+            />
+            <label for="homeSourceSourced" class="source-label">
               Sourced
             </label>
           </div>
@@ -155,16 +176,37 @@
 
         <p><strong>Candidate Source:</strong></p>
         <div class="candidate-source-group">
-          <label>
-            <input type="radio" name="candidateSource" value="referral" />
+          <!-- Referral -->
+          <input
+            type="radio"
+            id="candSourceReferral"
+            name="candidateSource"
+            value="referral"
+          />
+          <label for="candSourceReferral" class="source-label">
             Referral
           </label>
-          <label>
-            <input type="radio" name="candidateSource" value="applied" checked />
+
+          <!-- Applied -->
+          <input
+            type="radio"
+            id="candSourceApplied"
+            name="candidateSource"
+            value="applied"
+            checked
+          />
+          <label for="candSourceApplied" class="source-label">
             Applied
           </label>
-          <label>
-            <input type="radio" name="candidateSource" value="sourced" />
+
+          <!-- Sourced -->
+          <input
+            type="radio"
+            id="candSourceSourced"
+            name="candidateSource"
+            value="sourced"
+          />
+          <label for="candSourceSourced" class="source-label">
             Sourced
           </label>
         </div>
@@ -209,6 +251,7 @@
       <h2>Interview Feedback</h2>
       <form id="feedbackCandidateForm">
         <input type="hidden" id="feedbackCandidateId" />
+        <input type="hidden" id="editingInterviewerIndex" value="-1" />
 
         <label for="feedbackStageSelect">Stage</label>
         <select id="feedbackStageSelect">
@@ -268,18 +311,29 @@
 
         <p><strong>Candidate Source:</strong></p>
         <div class="candidate-source-group">
-          <label>
-            <input type="radio" name="editCandidateSource" value="referral" />
-            Referral
-          </label>
-          <label>
-            <input type="radio" name="editCandidateSource" value="applied" />
-            Applied
-          </label>
-          <label>
-            <input type="radio" name="editCandidateSource" value="sourced" />
-            Sourced
-          </label>
+          <input
+            type="radio"
+            id="editCandReferral"
+            name="editCandidateSource"
+            value="referral"
+          />
+          <label for="editCandReferral" class="source-label">Referral</label>
+
+          <input
+            type="radio"
+            id="editCandApplied"
+            name="editCandidateSource"
+            value="applied"
+          />
+          <label for="editCandApplied" class="source-label">Applied</label>
+
+          <input
+            type="radio"
+            id="editCandSourced"
+            name="editCandidateSource"
+            value="sourced"
+          />
+          <label for="editCandSourced" class="source-label">Sourced</label>
         </div>
         
         <button type="submit">Save Changes</button>
@@ -322,8 +376,20 @@
       <h2>Transfer Candidate</h2>
       <form id="transferCandidateForm">
         <input type="hidden" id="transferCandidateId" />
+
         <label for="transferJobSelect">Select Job</label>
         <select id="transferJobSelect"></select>
+
+        <label for="transferStageSelect">Select Stage</label>
+        <select id="transferStageSelect">
+          <option value="Applied">Applied</option>
+          <option value="Phone Screen">Phone Screen</option>
+          <option value="HM Screen">HM Screen</option>
+          <option value="On-site">On-site</option>
+          <option value="Offer">Offer</option>
+          <option value="Hired">Hired</option>
+        </select>
+
         <button type="submit">Transfer</button>
       </form>
     </div>
