@@ -109,7 +109,7 @@
     <!-- Stats bar -->
     <div id="statsBar" class="stats-bar"></div>
 
-    <!-- Main board with columns -->
+    <!-- Board & Columns -->
     <div class="board">
       <div class="column" data-stage="Applied">
         <h2>Applied</h2>
@@ -137,7 +137,7 @@
       </div>
     </div>
 
-    <!-- Pipeline Add Candidate Form (toggle via pipelineAddCandidateBtn) -->
+    <!-- Pipeline Add Candidate Form -->
     <div class="form-container" id="candidateFormContainer" style="display:none;">
       <h3>Add a New Candidate</h3>
       <form id="candidateForm">
@@ -173,7 +173,7 @@
       </form>
     </div>
 
-    <!-- "Back to Jobs" button in the pipeline -->
+    <!-- "Back to Jobs" button in pipeline -->
     <button id="backToJobsBtn" class="back-btn" style="margin-top: 20px;">
       ← Back to Jobs
     </button>
@@ -202,7 +202,7 @@
     </div>
   </div>
 
-  <!-- FEEDBACK MODAL -->
+  <!-- FEEDBACK MODAL (with multi-interviewer for On-site) -->
   <div id="feedbackCandidateModal" class="modal">
     <div class="modal-content">
       <span id="closeFeedbackModal" class="close">&times;</span>
@@ -218,16 +218,28 @@
           <option value="Offer">Offer</option>
         </select>
 
-        <label for="feedbackRatingSelect">Rating</label>
-        <select id="feedbackRatingSelect">
-          <option value="strong_no">Strong No</option>
-          <option value="no">No</option>
-          <option value="yes">Yes</option>
-          <option value="strong_yes">Strong Yes</option>
-        </select>
+        <!-- Single rating/notes for all but On-site -->
+        <div id="singleFeedbackSection">
+          <label for="feedbackRatingSelect">Rating</label>
+          <select id="feedbackRatingSelect">
+            <option value="strong_no">Strong No</option>
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+            <option value="strong_yes">Strong Yes</option>
+          </select>
 
-        <label for="feedbackNotes">Notes</label>
-        <textarea id="feedbackNotes"></textarea>
+          <label for="feedbackNotes">Notes</label>
+          <textarea id="feedbackNotes"></textarea>
+        </div>
+
+        <!-- On-site interviewers section -->
+        <div id="onsiteInterviewersSection" style="display:none; margin-top:10px; border:1px solid #ccc; padding:10px;">
+          <h4>On-site Interviewers</h4>
+          <button type="button" id="addInterviewerBtn" style="margin-bottom:10px;">
+            + Add Interviewer
+          </button>
+          <div id="onsiteInterviewersList"></div>
+        </div>
 
         <button type="submit">Save Feedback</button>
       </form>
